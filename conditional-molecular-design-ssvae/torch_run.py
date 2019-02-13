@@ -133,7 +133,7 @@ def run():
             optimizer.step()
             #total_time += time.time() - start
 
-            #print("loss", loss)
+            print("loss", loss)
 
 
         model.eval()

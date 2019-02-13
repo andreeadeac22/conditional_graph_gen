@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from torch_constants import *
 
@@ -11,35 +12,63 @@ class TorchSSVAE(nn.Module):
         self.char_to_int = dict((c,i) for i,c in enumerate(char_set))
         self.int_to_char = dict((i,c) for i,c in enumerate(char_set))
 
-        self.predi_gru = torch.nn.GRU(dim_x, dim_h, num_layers=n_hidden, batch_first=True, bidirectional=True)
-        self.predi_dense = torch.nn.Linear(dim_h * 2, dim_y)
+        self.predi_gru = torch.nn.GRU(self.dim_x, self.dim_h, num_layers=self.n_hidden, batch_first=True, bidirectional=True)
+        self.predi_dense = torch.nn.Linear(self.dim_h * 2, self.dim_y)
+
+        self.enc_gru = torch.nn.GRU(self.dim_x *2, self.dim_h, num_layers=self.n_hidden, batch_first=True, bidirectional=True)
+        self.enc_zero_dense = torch.nn.Linear(self.dim_y , self.dim_h)
+        self.enc_peek_dense = torch.nn.Linear(self.dim_y, self.dim_x)
+        self.enc_dense = torch.nn.Linear(self.dim_h * 2, self.dim_y)
+
+        self.dec_gru = torch.nn.GRU(self.dim_x *2, self.dim_h, num_layers = self.n_hidden, batch_first=True)
+        self.dec_zero_dense = torch.nn.Linear(self.dim_y , self.dim_h)
+        self.dec_peek_dense = torch.nn.Linear(self.dim_y, self.dim_x)
+        self.dec_dense = torch.nn.Linear(self.dim_h, self.dim_y)
 
 
 
     def forward(self, x_L, xs_L, y_L, x_U, xs_U):
+        
+        #predi_res = self.rnn_predictor(x_L)
+        dec_res = self.rnn_decoder(x_L, y_L)
+        return dec_res
+
+
+    def rnn_predictor(self, x_L):
         zero_state = torch.zeros(self.n_hidden *2, x_L.shape[0], self.dim_h)
         if torch.cuda.is_available():
             zero_state = zero_state.cuda()
-        #print(x_L.shape)
-
         _, final_state = self.predi_gru(x_L, zero_state)
-
-        #print("final_state", final_state.shape)
-
         cat_fw_bw = torch.cat([final_state[-1,:,:], final_state[-2,:,:]], dim=1)
-
-        #print("cat_fw_bw.shape", cat_fw_bw.shape)
-
-        predi_res = self.predi_dense(cat_fw_bw)
-
+        predi_res = predi_dense(cat_fw_bw)
         return predi_res
 
-    """
-    def rnnpredictor(self, x, dim_h, dim_y, reuse=False):
-        gru = torch.nn.GRU(x.shape[0], dim_h, num_layers=n_hidden, batch_first=True, bidirectional=True)
-        zero_state = torch.zeros(x.shape[1], x.shape[2])
-        _, final_state = gru(x, zero_state)
-        print("final_state", final_state.shape)
-        dense = torch.nn.Linear(final_state.shape[-1] * 2, dim_y)
-        return dense(torch.concat(final_state[0], final_state[1]))
-    """
+
+    def rnn_encoder(self, x, st):
+        zero_state = torch.zeros(self.n_hidden *2, x.shape[0], self.dim_y)
+        if torch.cuda.is_available():
+            zero_state = zero_state.cuda()
+        zero_state = F.sigmoid(self.enc_zero_dense(zero_state))
+
+        peek_in = F.sigmoid(self.enc_peek_dense(st))
+        peek = torch.reshape(peek_in.repeat([1, self.seqlen_x]), [-1, self.seqlen_x, self.dim_x])
+
+        _, final_state = self.enc_gru(torch.cat([x, peek], dim=2), zero_state)
+        cat_fw_bw = torch.cat([final_state[-1,:,:], final_state[-2,:,:]], dim=1)
+        enc_res = self.enc_dense(cat_fw_bw)
+        return enc_res
+
+
+    def rnn_decoder(self, x, st):
+        zero_state = torch.zeros(self.n_hidden, x.shape[0], self.dim_y)
+        if torch.cuda.is_available():
+            zero_state = zero_state.cuda()
+        zero_state = F.sigmoid(self.dec_zero_dense(zero_state))
+
+        peek_in = F.sigmoid(self.dec_peek_dense(st))
+        peek = torch.reshape(peek_in.repeat([1, self.seqlen_x]), [-1, self.seqlen_x, self.dim_x])
+
+        rnn_outputs, final_state = self.dec_gru(torch.cat([x, peek], dim=2), zero_state)
+        dec_res = self.dec_dense(rnn_outputs)
+        print("dec_res shape ", dec_res.shape)
+        return dec_res
