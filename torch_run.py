@@ -120,12 +120,10 @@ def run():
                 xs_U = xs_U.cuda()
 
 
-            predictions = model(x_L, xs_L, y_L, x_U, xs_U)
+            loss = model(x_L, xs_L, y_L, x_U, xs_U)
 
             # complete loss, equation 3
             #loss = (train_objL * float(batch_size_L) + train_objU * float(batch_size_U))/float(batch_size_L+batch_size_U) + float(batch_size_L)/float(batch_size_L+batch_size_U) * (beta * train_objYpred_MSE)
-            criterion =  nn.MSELoss()
-            loss = criterion(predictions, y_L)
 
             model.zero_grad()
             #start = time.time()
@@ -159,9 +157,8 @@ def run():
                 x_U = x_U.cuda()
                 xs_U = xs_U.cuda()
 
-            val_predictions = model(x_L, xs_L, y_L, x_U, xs_U)
+            val_loss = model(x_L, xs_L, y_L, x_U, xs_U)
             # val_res.append([val_cost, val_objL, val_objU, val_objYpred_MSE])
-            val_loss = criterion(val_predictions, y_L)
             print("val_loss", loss)
 
 
