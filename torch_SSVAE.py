@@ -8,7 +8,7 @@ from util import *
 from constants import *
 
 class TorchSSVAE(nn.Module):
-    def __init__(self, seqlen_x, dim_x, dim_y, dim_z=100, dim_h=250, n_hidden=3, batch_size=200, beta=10000, char_set=[' ']):
+    def __init__(self, mu_prior, cov_prior, seqlen_x, dim_x, dim_y, dim_z=100, dim_h=250, n_hidden=3, batch_size=200, beta=10000, char_set=[' ']):
         super(TorchSSVAE, self).__init__()
         self.seqlen_x, self.dim_x, self.dim_y, self.dim_z, self.dim_h, self.n_hidden, self.batch_size = seqlen_x, dim_x, dim_y, dim_z, dim_h, n_hidden, batch_size
 
@@ -31,16 +31,12 @@ class TorchSSVAE(nn.Module):
         self.dec_dense = torch.nn.Linear(self.dim_h, self.dim_x)
 
         self.softmax = torch.nn.Softmax(dim=2)
-
-
+        self.mu_prior = mu_prior
+        self.cov_prior = cov_prior
 
 
     def forward(self, x_L, xs_L, y_L, x_U, xs_U):
         #  y_L.shape is batch x dim_y (100,3) -- 3 features
-        mu_prior = torch.unsqueeze(torch.mean(y_L, 0), dim=0) # (1,3)
-        y_L_transpose = torch.transpose(y_L, 0, 1)
-        np_cov = np.cov(y_L_transpose.cpu())
-        cov_prior = torch.Tensor(np_cov).to(device) #(3,3)
 
         # labeled computation
         y_L_mu, y_L_lsgms = self.rnn_predictor(x_L)
@@ -49,7 +45,7 @@ class TorchSSVAE(nn.Module):
         z_L_sample = self.draw_sample(z_L_mu, z_L_lsgms) # 100,100
         decoder_L_out = self.rnn_decoder(xs_L, torch.cat([z_L_sample, y_L], dim=1))
         x_L_recon = self.softmax(decoder_L_out)
-        objL_res = self.objL(x_L, x_L_recon, y_L, z_L_mu, z_L_lsgms, mu_prior, cov_prior)
+        objL_res = self.objL(x_L, x_L_recon, y_L, z_L_mu, z_L_lsgms)
 
         #unlabeled computation
         y_U_mu, y_U_lsgms  = self.rnn_predictor(x_U)
@@ -59,7 +55,7 @@ class TorchSSVAE(nn.Module):
         z_U_sample = self.draw_sample(z_U_mu, z_U_lsgms) # 100,100
         decoder_U_out = self.rnn_decoder(xs_U, torch.cat([z_U_sample, y_U_sample], dim=1))
         x_U_recon = self.softmax(decoder_U_out)
-        objU_res = self.objU(x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms, mu_prior, cov_prior)
+        objU_res = self.objU(x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms)
         objYpred_MSE = torch.mean(torch.sum((y_L-y_L_mu) * (y_L-y_L_mu), dim=1))
 
         return objL_res, objU_res, objYpred_MSE, y_U_mu
@@ -109,19 +105,19 @@ class TorchSSVAE(nn.Module):
         return sample
 
 
-    def objL(self, x_L, x_L_recon, y_L, z_L_mu, z_L_lsgms, mu_prior, cov_prior):
+    def objL(self, x_L, x_L_recon, y_L, z_L_mu, z_L_lsgms):
         # x_L.shape is (100,89,36)
         # x_L_recon.shape is (100,89,36)
         L_log_lik = compute_log_lik(x_L, x_L_recon)
-        L_log_prior_y = noniso_logpdf(y_L, mu_prior, cov_prior)
+        L_log_prior_y = self.noniso_logpdf(y_L)
         L_KLD_z = iso_KLD(z_L_mu, z_L_lsgms)
         objL_res = - torch.mean(L_log_lik + L_log_prior_y - L_KLD_z)
         return objL_res
 
 
-    def objU(self, x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms, mu_prior, cov_prior):
+    def objU(self, x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms):
         U_log_lik = compute_log_lik(x_U, x_U_recon)
-        U_KLD_y = noniso_KLD(mu_prior, cov_prior, y_U_mu, y_U_lsgms)
+        U_KLD_y = self.noniso_KLD(y_U_mu, y_U_lsgms)
         U_KLD_z = iso_KLD(z_U_mu, z_U_lsgms)
         objU_res = - torch.mean(U_log_lik - U_KLD_y - U_KLD_z)
         return objU_res
@@ -129,12 +125,41 @@ class TorchSSVAE(nn.Module):
 
     def sampling_unconditional(self):
         sample_z=np.random.randn(1, self.dim_z)
-        sample_y=np.random.multivariate_normal(self.mu_prior, self.cov_prior, 1)
+        sample_y=np.random.multivariate_normal(self.mu_prior.cpu(), self.cov_prior.cpu(), 1)
+        sample_smiles=self.beam_search(sample_z, sample_y, k=5)
+        return sample_smiles
+
+    def sampling_conditional(self, yid, ytarget):
+        def random_cond_normal(yid, ytarget):
+            id2=[yid]
+            id1=np.setdiff1d([0,1,2],id2)
+            mu1=self.mu_prior[id1].cpu().numpy()
+            mu2=self.mu_prior[id2].cpu().numpy()
+            cov11=self.cov_prior[id1][:,id1].cpu().numpy()
+            cov12=self.cov_prior[id1][:,id2].cpu().numpy()
+            cov22=self.cov_prior[id2][:,id2].cpu().numpy()
+            cov21=self.cov_prior[id2][:,id1].cpu().numpy()
+
+            cond_mu=np.transpose(mu1.T+np.matmul(cov12, np.linalg.inv(cov22)) * (ytarget-mu2))[0]
+            cond_cov=cov11 - np.matmul(np.matmul(cov12, np.linalg.inv(cov22)), cov21)
+
+            marginal_sampled=np.random.multivariate_normal(cond_mu, cond_cov, 1)
+
+            tst=np.zeros(3)
+            tst[id1]=marginal_sampled
+            tst[id2]=ytarget
+            return np.asarray([tst])
+
+        sample_z=np.random.randn(1, self.dim_z)
+        sample_y=random_cond_normal(yid, ytarget)
         sample_smiles=self.beam_search(sample_z, sample_y, k=5)
         return sample_smiles
 
 
-    def beam_search(self, z_input, y_input, k=5, x_G_recon, ):
+    def beam_search(self, z_input, y_input, k=5):
+        z_input = torch.tensor(z_input, dtype=torch.float32, device=device)
+        y_input = torch.tensor(y_input, dtype=torch.float32, device=device)
+
         def reconstruct(xs_input, z_sample, y_input):
             decoder_G_out = self.rnn_decoder(xs_input, torch.cat([z_sample, y_input], dim=1))
             x_G_recon = self.softmax(decoder_G_out)
@@ -147,7 +172,9 @@ class TorchSSVAE(nn.Module):
             cands2=[]
             cands2_score=[]
             for j, samplevec in enumerate(cands):
-                o = reconstruct(samplevec, z_input, y_input)
+                samplevec_tensor = torch.tensor(samplevec, dtype=torch.float32, device=device)
+                o_tensor = reconstruct(samplevec_tensor, z_input, y_input)
+                o = o_tensor.cpu().detach().numpy()
                 sampleidxs = np.argsort(-o[0,i])[:k]
                 for sampleidx in sampleidxs:
                     samplevectt=np.copy(samplevec)
@@ -164,3 +191,29 @@ class TorchSSVAE(nn.Module):
                 break
         sampletxt = ''.join([self.int_to_char[np.argmax(t)] for t in cands[0,0]]).strip()
         return sampletxt
+
+
+    def noniso_logpdf(self, x):
+        # log(p(y)) where p(y) is multivariate gaussian
+        deviations = x - self.mu_prior # 100,3
+        cov_inverse = torch.inverse(self.cov_prior) # 3x3
+        prod = torch.mm(deviations, cov_inverse)
+        su = torch.sum( prod * deviations, dim=1)
+
+        return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) + su )
+
+
+    def noniso_KLD(self, mu, log_sigma_sq):
+        est_deviation = self.mu_prior - mu
+        cov_inverse = torch.inverse(self.cov_prior)
+        noniso_logpdf_val = torch.sum( torch.mm(est_deviation, cov_inverse) * est_deviation, dim=1) - float(self.cov_prior.shape[0]) + np.log(np.linalg.det(self.cov_prior.cpu()))
+        exp_sgm = torch.exp(log_sigma_sq) # exp_sgm.shape is (100,3)
+
+        all_traces = []
+        for i in range(exp_sgm.shape[0]):
+            diagonal = torch.diag(exp_sgm[i])
+            trace = torch.trace(torch.mm(cov_inverse, diagonal))
+            all_traces.append(trace)
+
+        all_traces = torch.Tensor(all_traces)
+        return 0.5 * ( torch.sum(all_traces) + noniso_logpdf_val - torch.sum(log_sigma_sq, dim=1))
