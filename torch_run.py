@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from preprocessing import smiles_to_seq, vectorize, get_property, canonocalize
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 import torch.nn.functional as F
 
 from torch_SSVAE import *
@@ -91,7 +91,10 @@ def run():
     optimizer = torch.optim.Adam(model.parameters())
 
     if torch.cuda.is_available():
+        print("On cuda")
         model.cuda()
+    else:
+        print("Not on cuda")
 
     for epoch in range(20):
         model.train()
@@ -106,24 +109,20 @@ def run():
             start_U=i*batch_size_U
             end_U=start_U+batch_size_U
 
-            x_L =  torch.tensor(trnX_L[start_L:end_L], dtype=torch.float32)
-            xs_L = torch.tensor(trnXs_L[start_L:end_L], dtype=torch.float32)
-            y_L = torch.tensor(trnY_L[start_L:end_L], dtype=torch.float32)
-            x_U =  torch.tensor(trnX_U[start_U:end_U], dtype=torch.float32)
-            xs_U =  torch.tensor(trnXs_U[start_U:end_U], dtype=torch.float32)
+            x_L =  torch.tensor(trnX_L[start_L:end_L], dtype=torch.float32, device=device)
+            xs_L = torch.tensor(trnXs_L[start_L:end_L], dtype=torch.float32, device=device)
+            y_L = torch.tensor(trnY_L[start_L:end_L], dtype=torch.float32, device=device)
+            x_U =  torch.tensor(trnX_U[start_U:end_U], dtype=torch.float32, device=device)
+            xs_U =  torch.tensor(trnXs_U[start_U:end_U], dtype=torch.float32, device=device)
 
-            if torch.cuda.is_available():
-                x_L = x_L.cuda()
-                xs_L = xs_L.cuda()
-                y_L = y_L.cuda()
-                x_U = x_U.cuda()
-                xs_U = xs_U.cuda()
+            objL_res, objU_res, objYpred, predictor_L_out = model(x_L, xs_L, y_L, x_U, xs_U)
+            loss = (objL_res * float(batch_size_L) + objU_res * float(batch_size_U))/float(batch_size_L+batch_size_U) + float(batch_size_L)/float(batch_size_L+batch_size_U) * (beta * objYpred)
 
-
-            loss = model(x_L, xs_L, y_L, x_U, xs_U)
-
-            # complete loss, equation 3
-            #loss = (train_objL * float(batch_size_L) + train_objU * float(batch_size_U))/float(batch_size_L+batch_size_U) + float(batch_size_L)/float(batch_size_L+batch_size_U) * (beta * train_objYpred_MSE)
+            eval_y_L = y_L.cpu().detach().numpy()
+            eval_predictor_L_out = predictor_L_out.cpu().detach().numpy()
+            mae = mean_absolute_error(eval_y_L, eval_predictor_L_out)
+            rmse = np.sqrt(mean_squared_error(eval_y_L, eval_predictor_L_out))
+            print("Epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae, rmse, loss.item()))
 
             model.zero_grad()
             #start = time.time()
@@ -131,8 +130,8 @@ def run():
             optimizer.step()
             #total_time += time.time() - start
 
-            print("loss", loss)
-
+        ## model validation
+        print('::: model validation')
 
         model.eval()
         val_res = []
@@ -143,37 +142,39 @@ def run():
             start_U=i*batch_size_val_U
             end_U=start_U+batch_size_val_U
 
-            #val_cost, val_objL, val_objU, val_objYpred_MSE = \'
-            x_L =  torch.tensor(valX_L[start_L:end_L], dtype=torch.float32)
-            xs_L = torch.tensor(valXs_L[start_L:end_L], dtype=torch.float32)
-            y_L = torch.tensor(valY_L[start_L:end_L], dtype=torch.float32)
-            x_U =  torch.tensor(valX_U[start_U:end_U], dtype=torch.float32)
-            xs_U =  torch.tensor(valXs_U[start_U:end_U], dtype=torch.float32)
+            x_L =  torch.tensor(valX_L[start_L:end_L], dtype=torch.float32, device=device)
+            xs_L = torch.tensor(valXs_L[start_L:end_L], dtype=torch.float32, device=device)
+            y_L = torch.tensor(valY_L[start_L:end_L], dtype=torch.float32, device=device)
+            x_U =  torch.tensor(valX_U[start_U:end_U], dtype=torch.float32, device=device)
+            xs_U =  torch.tensor(valXs_U[start_U:end_U], dtype=torch.float32, device=device)
 
-            if torch.cuda.is_available():
-                x_L = x_L.cuda()
-                xs_L = xs_L.cuda()
-                y_L = y_L.cuda()
-                x_U = x_U.cuda()
-                xs_U = xs_U.cuda()
-
-            val_loss = model(x_L, xs_L, y_L, x_U, xs_U)
+            objL_res, objU_res, objYpred, predictor_L_out_valid = model(x_L, xs_L, y_L, x_U, xs_U)
             # val_res.append([val_cost, val_objL, val_objU, val_objYpred_MSE])
-            print("val_loss", loss)
+
+            eval_y_L = y_L.cpu().detach().numpy()
+            eval_predictor_L_out_valid = predictor_L_out_valid.cpu().detach().numpy()
+
+            mae_valid= mean_absolute_error(eval_y_L, eval_predictor_L_out_valid)
+            rmse_valid = np.sqrt(mean_squared_error(eval_y_L, eval_predictor_L_out_valid))
+            print("Valid epoch {0:2d} : MAE{1:2.3f}, RMSE{1:2.3f} ".format(epoch, mae_valid, rmse_valid))
+
+    # property prediction performance
+    print('::: property prediction performance')
+    predi_Y_mu, predi_Y_lsgms = model.rnn_predictor(tstX)
+    tstY_hat = scaler_Y.inverse_transform(predi_Y_mu)
+     for j in range(dim_y):
+        print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])])
+
+    ## unconditional generation
+    print('::: unconditional generation')
+    for t in range(10):
+        smi = model.sampling_unconditional()
+        print([t, smi, get_property(smi)])
+
+    
 
 
-            """
-            val_res.append([val_loss])
 
-            val_res=np.mean(val_res,axis=0)
-            print(epoch, ['Training', 'cost_trn', trn_res[1]])
-            print('---', ['Validation', 'cost_val', val_res[0]])
-
-            val_log[epoch] = val_res[0]
-            if epoch > 20 and np.min(val_log[0:epoch-10]) * 0.99 < np.min(val_log[epoch-10:epoch+1]):
-                print('---termination condition is met')
-                break
-            """
 
 
 if __name__ == '__main__':
