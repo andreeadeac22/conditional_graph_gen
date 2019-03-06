@@ -1,6 +1,8 @@
 from __future__ import print_function
 
+import os
 import torch
+import logging
 import numpy as np
 import pandas as pd
 from preprocessing import smiles_to_seq, vectorize, get_property, canonocalize
@@ -11,6 +13,11 @@ import torch.nn.functional as F
 from torch_SSVAE import *
 from util import *
 from torch_constants import *
+
+logging.basicConfig(
+	level=logging.INFO,
+	format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+	datefmt="%Y-%m-%d %H:%M:%S")
 
 def run():
     # data preparation
@@ -103,14 +110,15 @@ def run():
     else:
         print("Not on cuda")
     best_val_loss = float('inf')
+    val_log=np.zeros(300)
 
-    for epoch in range(300): # originally 300
+    for epoch in range(30): # originally 300
         model.train()
         [trnX_L, trnXs_L, trnY_L]= permutation([trnX_L, trnXs_L, trnY_L])
         [trnX_U, trnXs_U]= permutation([trnX_U, trnXs_U])
 
 
-        for i in range(n_batch): # n_batch
+        for i in range(1): # n_batch
             start_L=i*batch_size_L
             end_L=start_L+batch_size_L
 
@@ -143,8 +151,7 @@ def run():
 
         model.eval()
         val_res = []
-        epoch_val_loss = 0
-        for i in range(10): #10
+        for i in range(1): #10
             start_L=i*batch_size_val_L
             end_L=start_L+batch_size_val_L
 
@@ -161,27 +168,36 @@ def run():
             val_loss = (objL_res * float(batch_size_val_L) + objU_res * float(batch_size_val_U))/float(batch_size_val_L+batch_size_val_U) + float(batch_size_val_L)/float(batch_size_val_L+batch_size_val_U) * (beta * objYpred)
 
             val_res.append([objL_res, objU_res, objYpred])
-            epoch_val_loss += val_loss
 
             eval_y_L = y_L.cpu().detach().numpy()
             eval_predictor_L_out_valid = predictor_L_out_valid.cpu().detach().numpy()
 
             mae_valid= mean_absolute_error(eval_y_L, eval_predictor_L_out_valid)
             rmse_valid = np.sqrt(mean_squared_error(eval_y_L, eval_predictor_L_out_valid))
-            print("Valid epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae_valid, rmse_valid, loss.item()))
+            print("Valid epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae_valid, rmse_valid, val_loss.item()))
 
+        """
         if epoch_val_loss < best_val_loss:
-            logging.info('  --> Better validation result, epoch: ', epoch)
-            best_valid_loss = epoch_valid_loss
+            print('  --> Better validation result, epoch: ', epoch)
+            best_val_loss = epoch_val_loss
             MODEL_SAVE_PATH = os.path.join('models', 'ssvae' + '_model.pt')
             torch.save(model.state_dict(), MODEL_SAVE_PATH)
+        """
 
         val_res=np.mean(val_res,axis=0)
         val_log[epoch] = val_res[0]
 
+        if epoch > 20:
+            print("First {0:6.3f}, second {1:6.3f}".format(np.min(val_log[0:epoch-10]) * 0.99, np.min(val_log[epoch-10:epoch+1])))
         if epoch > 20 and np.min(val_log[0:epoch-10]) * 0.99 < np.min(val_log[epoch-10:epoch+1]):
             print('---termination condition is met')
             break
+
+
+    # model testing
+    print('::: model testing')
+    #MODEL_SAVE_PATH = os.path.join('models', 'ssvae' + '_model.pt')
+    #model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
     # property prediction performance
     print('::: property prediction performance')
@@ -191,20 +207,17 @@ def run():
     for j in range(dim_y):
         print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])])
 
-
     ## unconditional generation
     print('::: unconditional generation')
     for t in range(10):
         smi = model.sampling_unconditional()
         print([t, smi, get_property(smi)])
 
-
     ## conditional generation (e.g. MolWt=250)
     print('::: conditional generation (e.g. MolWt=250)')
     yid = 0
     ytarget = 250.
     ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
-
     for t in range(10):
         smi = model.sampling_conditional(yid, ytarget_transform)
         print([t, smi, get_property(smi)])
