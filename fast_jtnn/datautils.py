@@ -62,23 +62,26 @@ class MolTreeFolder(object):
     def __iter__(self):
         for fn in self.data_files:
             fn = os.path.join(self.data_folder, fn)
+            print("fn ", fn)
             with open(fn) as f:
-                data = pickle.load(f)
+                try:
+                    data = pickle.load(f)
+                    if self.shuffle:
+                        random.shuffle(data) #shuffle data before batch
 
-            if self.shuffle:
-                random.shuffle(data) #shuffle data before batch
+                    batches = [data[i : i + self.batch_size] for i in range(0, len(data), self.batch_size)]
+                    if len(batches[-1]) < self.batch_size:
+                        batches.pop()
 
-            batches = [data[i : i + self.batch_size] for i in range(0, len(data), self.batch_size)]
-            if len(batches[-1]) < self.batch_size:
-                batches.pop()
+                    dataset = MolTreeDataset(batches, self.vocab, self.assm)
+                    dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, collate_fn=lambda x:x[0])
 
-            dataset = MolTreeDataset(batches, self.vocab, self.assm)
-            dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, collate_fn=lambda x:x[0])
+                    for b in dataloader:
+                        yield b
 
-            for b in dataloader:
-                yield b
-
-            del data, batches, dataset, dataloader
+                    del data, batches, dataset, dataloader
+                except(UnicodeDecodeError) as e:
+                    print("Error!")
 
 class PairTreeDataset(Dataset):
 

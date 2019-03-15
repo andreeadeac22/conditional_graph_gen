@@ -4,8 +4,8 @@ from multiprocessing import Pool
 
 import math, random, sys
 from optparse import OptionParser
-import _pickle as pickle
-import rdkits
+import pickle
+import rdkit
 
 from fast_jtnn import *
 
@@ -35,19 +35,32 @@ if __name__ == "__main__":
     opts,args = parser.parse_args()
     opts.njobs = int(opts.njobs)
 
+    print("Before Pool")
     pool = Pool(opts.njobs)
     num_splits = int(opts.nsplits)
 
+    print("Before open train data")
     with open(opts.train_path) as f:
         data = [line.strip("\r\n ").split()[0] for line in f]
 
+    print("data length", len(data))
+
+    data = data[:150]
+
+
+    print("Before pool map")
     all_data = pool.map(tensorize, data)
 
-    le = (len(all_data) + num_splits - 1) / num_splits
+    le = int((len(all_data) + num_splits - 1) / num_splits)
 
+    print("all_data", all_data[0].data)
+
+
+    print("Before write each tensor")
     for split_id in range(num_splits):
         st = split_id * le
-        sub_data = all_data[st : st + le]
 
-        with open('tensors-%d.pkl' % split_id, 'wb') as f:
+        sub_data = all_data[st:st + le]
+
+        with open('processed/moses_tensors-%d.pkl' % split_id, 'wb') as f:
             pickle.dump(sub_data, f, pickle.HIGHEST_PROTOCOL)
