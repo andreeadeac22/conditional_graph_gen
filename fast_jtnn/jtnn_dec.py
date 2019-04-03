@@ -12,7 +12,7 @@ MAX_DECODE_LEN = 100
 
 class JTNNDecoder(nn.Module):
 
-    def __init__(self, vocab, hidden_size, latent_size, embedding):
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, embedding):
         super(JTNNDecoder, self).__init__()
         self.hidden_size = hidden_size
         self.vocab_size = vocab.size()
@@ -28,10 +28,10 @@ class JTNNDecoder(nn.Module):
         #Word Prediction Weights
         print("hidden_size ", hidden_size)
         print("latent size ", latent_size)
-        self.W = nn.Linear(hidden_size + latent_size, hidden_size)
+        self.W = nn.Linear(hidden_size + latent_size + prop_hidden_size, hidden_size)
 
         #Stop Prediction Weights
-        self.U = nn.Linear(hidden_size + latent_size, hidden_size)
+        self.U = nn.Linear(hidden_size + latent_size + prop_hidden_size, hidden_size)
         self.U_i = nn.Linear(2 * hidden_size, hidden_size)
 
         #Output Weights
@@ -41,17 +41,22 @@ class JTNNDecoder(nn.Module):
         #Loss Functions
         self.pred_loss = nn.CrossEntropyLoss(size_average=False)
         self.stop_loss = nn.BCEWithLogitsLoss(size_average=False)
+        print("Decoder ", hidden_size, latent_size)
+
 
     def aggregate(self, hiddens, contexts, x_tree_vecs, mode):
         if mode == 'word':
+            print("It is W")
             V, V_o = self.W, self.W_o
         elif mode == 'stop':
+            print("It is U ")
             V, V_o = self.U, self.U_o
         else:
             raise ValueError('aggregate mode is wrong')
 
         tree_contexts = x_tree_vecs.index_select(0, contexts)
         input_vec = torch.cat([hiddens, tree_contexts], dim=-1)
+        print("ggregate dec ", input_vec.shape)
         output_vec = F.relu( V(input_vec) )
         return V_o(output_vec)
 

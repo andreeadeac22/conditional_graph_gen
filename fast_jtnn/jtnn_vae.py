@@ -60,8 +60,11 @@ class JTNNVAE(nn.Module):
         return z_vecs, kl_loss
 
     def sample_prior(self, prob_decode=False):
-        z_tree = torch.randn(1, self.latent_size).cuda()
-        z_mol = torch.randn(1, self.latent_size).cuda()
+        z_tree = torch.randn(1, self.latent_size)
+        z_mol = torch.randn(1, self.latent_size)
+        if torch.cuda.is_available():
+            z_tree = z_tree.cuda()
+            z_mol = z_mol.cuda()
         return self.decode(z_tree, z_mol, prob_decode)
 
     def forward(self, x_batch, beta):
@@ -74,7 +77,9 @@ class JTNNVAE(nn.Module):
         word_loss, topo_loss, word_acc, topo_acc = self.decoder(x_batch, z_tree_vecs)
         assm_loss, assm_acc = self.assm(x_batch, x_jtmpn_holder, z_mol_vecs, x_tree_mess)
 
-        return word_loss + topo_loss + assm_loss + beta * kl_div, kl_div.item(), word_acc, topo_acc, assm_acc
+        #return word_loss + topo_loss + assm_loss + beta * kl_div, kl_div.item(), word_acc, topo_acc, assm_acc
+        return word_loss + topo_loss + assm_loss + beta * kl_div, tree_kl.item(), mol_kl.item(), word_acc, topo_acc, assm_acc
+
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):
         jtmpn_holder,batch_idx = jtmpn_holder
@@ -168,7 +173,9 @@ class JTNNVAE(nn.Module):
             return None, cur_mol
 
         cand_smiles,cand_amap = zip(*cands)
-        aroma_score = torch.Tensor(aroma_score).cuda()
+        aroma_score = torch.Tensor(aroma_score)
+        if torch.cuda.is_available():
+            aroma_score = aroma_score.cuda()
         cands = [(smiles, all_nodes, cur_node) for smiles in cand_smiles]
 
         if len(cands) > 1:

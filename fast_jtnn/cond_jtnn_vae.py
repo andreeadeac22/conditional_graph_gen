@@ -9,26 +9,35 @@ from .mol_tree import Vocab, MolTree
 from .nnutils import create_var, flatten_tensor, avg_pool
 from .jtnn_enc import JTNNEncoder
 from .jtnn_dec import JTNNDecoder
+from .jtnn_predi import JTNNPredi
 from .mpn import MPN
 from .jtmpn import JTMPN
 from .chemutils import enum_assemble, set_atommap, copy_edit_mol, attach_mols
+from .constants import *
 
 
-class JTNNVAE(nn.Module):
+class CondJTNNVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, latent_size, depthT, depthG):
-        super(JTNNVAE, self).__init__()
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG):
+        super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = hidden_size
-        self.latent_size = latent_size = latent_size / 2 #Tree and Mol has two vectors
+        self.latent_size = latent_size = int(latent_size / 2) #Tree and Mol has two vectors
 
+        self.predi = JTNNPredi(hidden_size, prop_hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
         self.jtnn = JTNNEncoder(hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
-        self.decoder = JTNNDecoder(vocab, hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
+        self.decoder = JTNNDecoder(vocab, hidden_size, prop_hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
+
+        self.prop_dense = nn.Linear(num_prop, prop_hidden_size)
+        self.relu = nn.ReLU()
+
+        self.tree_enc_dense = nn.Linear(hidden_size + prop_hidden_size, hidden_size)
+        self.mol_enc_dense = nn.Linear(hidden_size + prop_hidden_size, hidden_size)
 
         self.jtmpn = JTMPN(hidden_size, depthG)
         self.mpn = MPN(hidden_size, depthG)
 
-        self.A_assm = nn.Linear(latent_size, hidden_size, bias=False)
+        self.A_assm = nn.Linear(latent_size + prop_hidden_size, hidden_size, bias=False)
         self.assm_loss = nn.CrossEntropyLoss(size_average=False)
 
         self.T_mean = nn.Linear(hidden_size, latent_size)
@@ -36,19 +45,15 @@ class JTNNVAE(nn.Module):
         self.G_mean = nn.Linear(hidden_size, latent_size)
         self.G_var = nn.Linear(hidden_size, latent_size)
 
-    def encode(self, jtenc_holder, mpn_holder):
+    def encode(self, jtenc_holder, mpn_holder, props):
         tree_vecs, tree_mess = self.jtnn(*jtenc_holder)
         mol_vecs = self.mpn(*mpn_holder)
-        return tree_vecs, tree_mess, mol_vecs
 
-    def encode_latent(self, jtenc_holder, mpn_holder):
-        tree_vecs, _ = self.jtnn(*jtenc_holder)
-        mol_vecs = self.mpn(*mpn_holder)
-        tree_mean = self.T_mean(tree_vecs)
-        mol_mean = self.G_mean(mol_vecs)
-        tree_var = -torch.abs(self.T_var(tree_vecs))
-        mol_var = -torch.abs(self.G_var(mol_vecs))
-        return torch.cat([tree_mean, mol_mean], dim=1), torch.cat([tree_var, mol_var], dim=1)
+        prop_tree_vecs = self.tree_enc_dense(torch.cat((tree_vecs, props), dim=1))
+        prop_mol_vecs = self.mol_enc_dense(torch.cat((mol_vecs, props), dim=1))
+
+        return prop_tree_vecs, tree_mess, prop_mol_vecs
+
 
     def rsample(self, z_vecs, W_mean, W_var):
         batch_size = z_vecs.size(0)
@@ -59,22 +64,74 @@ class JTNNVAE(nn.Module):
         z_vecs = z_mean + torch.exp(z_log_var / 2) * epsilon
         return z_vecs, kl_loss
 
+    def draw_sample(self, mu, lsgms):
+        epsilon = torch.randn(mu.shape).to(device) #by default, mu=0, std=1
+        exp_lsgms = torch.exp(0.5*lsgms).to(device)
+        sample = torch.add(mu, (exp_lsgms*epsilon))
+        return sample
+
     def sample_prior(self, prob_decode=False):
-        z_tree = torch.randn(1, self.latent_size).cuda()
-        z_mol = torch.randn(1, self.latent_size).cuda()
+        z_tree = torch.randn(1, self.latent_size)
+        z_mol = torch.randn(1, self.latent_size)
+        if torch.cuda.is_available():
+            z_tree = z_tree.cuda()
+            z_mol = z_mol.cuda()
         return self.decode(z_tree, z_mol, prob_decode)
 
+
     def forward(self, x_batch, beta):
-        x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder = x_batch
-        x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder)
-        z_tree_vecs,tree_kl = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
-        z_mol_vecs,mol_kl = self.rsample(x_mol_vecs, self.G_mean, self.G_var)
+        print("Conditional")
+        x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder, \
+            prop_x_batch, prop_x_jtenc_holder, prop_x_mpn_holder, prop_x_jtmpn_holder, props \
+                = x_batch
+        props = self.relu(self.prop_dense(props))
+        #Labeled
+        y_L_mu, y_L_lsgms = self.predi(*prop_x_jtenc_holder)
+        prop_x_tree_vecs, prop_x_tree_mess, prop_x_mol_vecs = self.encode(prop_x_jtenc_holder, prop_x_mpn_holder, props)
+        prop_z_tree_vecs, prop_tree_kl = self.rsample(prop_x_tree_vecs, self.T_mean, self.T_var)
+        prop_z_mol_vecs, prop_mol_kl = self.rsample(prop_x_mol_vecs, self.G_mean, self.G_var)
 
-        kl_div = tree_kl + mol_kl
-        word_loss, topo_loss, word_acc, topo_acc = self.decoder(x_batch, z_tree_vecs)
-        assm_loss, assm_acc = self.assm(x_batch, x_jtmpn_holder, z_mol_vecs, x_tree_mess)
+        cat_decoder = torch.cat((prop_z_tree_vecs, props), dim=1)
+        print("prop_x_batch ", len(prop_x_batch))
+        print("cat_decoder ", cat_decoder.shape)
 
-        return word_loss + topo_loss + assm_loss + beta * kl_div, kl_div.item(), word_acc, topo_acc, assm_acc
+        prop_word_loss, prop_topo_loss, prop_word_acc, prop_topo_acc = self.decoder(prop_x_batch, cat_decoder)
+
+        print("prop_z_mol_vecs ", prop_z_mol_vecs.shape)
+        print("props ", props.shape)
+        print("prop_x_tree_mess ", prop_x_tree_mess.shape)
+
+        cat_z_mol = torch.cat((prop_z_mol_vecs, props), dim=1)
+        #cat_tree = torch.cat((prop_x_tree_mess, props), dim=1)
+        prop_assm_loss, prop_assm_acc = self.assm(prop_x_batch, prop_x_jtmpn_holder, cat_z_mol, prop_x_tree_mess)
+
+        prop_kl_div = prop_tree_kl + prop_mol_kl
+        prop_loss = prop_word_loss + prop_topo_loss + prop_assm_loss + beta * prop_kl_div
+
+        #Unlabeled
+        y_U_mu, y_U_lsgms = self.predi(*x_jtenc_holder)
+        y_U_sample = self.draw_sample(y_U_mu, y_U_lsgms)
+        x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder, y_U_sample)
+        print("x_tree_vecs ", x_tree_vecs.shape)
+        print("x_tree_mess ", x_tree_mess.shape)
+        print("x_mol_vecs ", x_mol_vecs.shape)
+
+        z_tree_vecs, tree_kl = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
+        z_mol_vecs, mol_kl = self.rsample(x_mol_vecs, self.G_mean, self.G_var)
+
+        u_cat_decoder = torch.cat((z_tree_vecs, y_U_sample), dim=1)
+        u_word_loss, u_topo_loss, u_word_acc, u_topo_acc = self.decoder(x_batch, u_cat_decoder)
+
+        u_cat_z_mol = torch.cat((z_mol_vecs, y_U_sample), dim=1)
+        u_assm_loss, u_assm_acc = self.assm(x_batch, x_jtmpn_holder, u_cat_z_mol, x_tree_mess)
+
+        u_kl_div = tree_kl + mol_kl
+        u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+
+        return prop_loss + u_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc
+                #u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc
+
+
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):
         jtmpn_holder,batch_idx = jtmpn_holder
@@ -110,11 +167,12 @@ class JTNNVAE(nn.Module):
         all_loss = sum(all_loss) / len(mol_batch)
         return all_loss, acc * 1.0 / cnt
 
-    def decode(self, x_tree_vecs, x_mol_vecs, prob_decode):
+
+    def decode(self, x_tree_vecs, x_mol_vecs, prob_decode, props):
         #currently do not support batch decoding
         assert x_tree_vecs.size(0) == 1 and x_mol_vecs.size(0) == 1
 
-        pred_root,pred_nodes = self.decoder.decode(x_tree_vecs, prob_decode)
+        pred_root, pred_nodes = self.decoder.decode(x_tree_vecs, prob_decode, props)
         if len(pred_nodes) == 0: return None
         elif len(pred_nodes) == 1: return pred_root.smiles
 
@@ -151,6 +209,7 @@ class JTNNVAE(nn.Module):
         set_atommap(cur_mol)
         cur_mol = Chem.MolFromSmiles(Chem.MolToSmiles(cur_mol))
         return Chem.MolToSmiles(cur_mol) if cur_mol is not None else None
+
 
     def dfs_assemble(self, y_tree_mess, x_mol_vecs, all_nodes, cur_mol, global_amap, fa_amap, cur_node, fa_node, prob_decode, check_aroma):
         fa_nid = fa_node.nid if fa_node is not None else -1

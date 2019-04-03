@@ -24,6 +24,7 @@ parser.add_argument('--save_dir', required=True)
 parser.add_argument('--load_epoch', type=int, default=0)
 
 parser.add_argument('--hidden_size', type=int, default=450)
+parser.add_argument('--prop_hidden_size', type=int, default=50) #cond
 parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--latent_size', type=int, default=56)
 parser.add_argument('--depthT', type=int, default=20)
@@ -36,12 +37,12 @@ parser.add_argument('--step_beta', type=float, default=0.001)
 parser.add_argument('--max_beta', type=float, default=1.0)
 parser.add_argument('--warmup', type=int, default=40000)
 
-parser.add_argument('--epoch', type=int, default=20)
+parser.add_argument('--epoch', type=int, default=1)
 parser.add_argument('--anneal_rate', type=float, default=0.9)
 parser.add_argument('--anneal_iter', type=int, default=40000)
 parser.add_argument('--kl_anneal_iter', type=int, default=1000)
 parser.add_argument('--print_iter', type=int, default=50)
-parser.add_argument('--save_iter', type=int, default=5000)
+parser.add_argument('--save_iter', type=int, default=1)
 
 args = parser.parse_args()
 print(args)
@@ -49,7 +50,12 @@ print(args)
 vocab = [x.strip("\r\n ") for x in open(args.vocab)]
 vocab = Vocab(vocab)
 
-model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG).cuda()
+if args.train == "zinc310k-processed":
+    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG)
+else:
+    model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG)
+if torch.cuda.is_available():
+    model = model.cuda()
 print(model)
 
 for param in model.parameters():
@@ -73,20 +79,27 @@ grad_norm = lambda m: math.sqrt(sum([p.grad.norm().item() ** 2 for p in m.parame
 total_step = args.load_epoch
 beta = args.beta
 meters = np.zeros(5)
+prop_meters = np.zeros(5)
+u_meters = np.zeros(5)
 
 for epoch in range(args.epoch):
-    loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
+    if args.train == "zinc310k-processed":
+        loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
+    else:
+        loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
     for batch in loader:
+        #print("batch ")
+        #print(batch)
         total_step += 1
-        try:
-            model.zero_grad()
-            loss, tree_kl, mol_kl, wacc, tacc, sacc = model(batch, beta)
-            loss.backward()
-            nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
-            optimizer.step()
-        except Exception as e:
-            print(e)
-            continue
+        #try:
+        model.zero_grad()
+        loss, tree_kl, mol_kl, wacc, tacc, sacc = model(batch, beta)
+        loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
+        optimizer.step()
+        #except Exception as e:
+        #    print(e)
+        #    continue
 
         meters = meters + np.array([tree_kl, mol_kl, wacc * 100, tacc * 100, sacc * 100])
 

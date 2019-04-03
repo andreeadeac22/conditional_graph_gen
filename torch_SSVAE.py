@@ -56,6 +56,7 @@ class TorchSSVAE(nn.Module):
         decoder_U_out = self.rnn_decoder(xs_U, torch.cat([z_U_sample, y_U_sample], dim=1))
         x_U_recon = self.softmax(decoder_U_out)
         objU_res = self.objU(x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms)
+        
         objYpred_MSE = torch.mean(torch.sum((y_L-y_L_mu) * (y_L-y_L_mu), dim=1))
 
         return objL_res, objU_res, objYpred_MSE, y_U_mu

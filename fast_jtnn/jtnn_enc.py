@@ -21,6 +21,7 @@ class JTNNEncoder(nn.Module):
         self.GRU = GraphGRU(hidden_size, hidden_size, depth=depth)
 
     def forward(self, fnode, fmess, node_graph, mess_graph, scope):
+        print("Encoder")
         fnode = create_var(fnode)
         fmess = create_var(fmess)
         node_graph = create_var(node_graph)
@@ -42,6 +43,8 @@ class JTNNEncoder(nn.Module):
             batch_vecs.append( cur_vecs )
 
         tree_vecs = torch.stack(batch_vecs, dim=0)
+        print("tree_vecs ", tree_vecs.shape)
+        print("messages ", messages.shape)
         return tree_vecs, messages
 
     @staticmethod

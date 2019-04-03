@@ -6,10 +6,10 @@ from collections import deque
 from .mol_tree import Vocab, MolTree
 from .nnutils import create_var, index_select_ND
 
-class JTNNEncoder(nn.Module):
+class JTNNPredi(nn.Module):
 
-    def __init__(self, hidden_size, depth, embedding):
-        super(JTNNEncoder, self).__init__()
+    def __init__(self, hidden_size, prop_hidden_size, depth, embedding):
+        super(JTNNPredi, self).__init__()
         self.hidden_size = hidden_size
         self.depth = depth
 
@@ -19,6 +19,10 @@ class JTNNEncoder(nn.Module):
             nn.ReLU()
         )
         self.GRU = GraphGRU(hidden_size, hidden_size, depth=depth)
+        
+        self.prop_predi_mu = nn.Linear(hidden_size, prop_hidden_size)
+        self.prop_predi_lsgms = nn.Linear(hidden_size, prop_hidden_size)
+
 
     def forward(self, fnode, fmess, node_graph, mess_graph, scope):
         fnode = create_var(fnode)
@@ -42,7 +46,11 @@ class JTNNEncoder(nn.Module):
             batch_vecs.append( cur_vecs )
 
         tree_vecs = torch.stack(batch_vecs, dim=0)
-        return tree_vecs, messages
+
+        y_L_mu = self.prop_predi_mu(tree_vecs)
+        y_L_lsgms = self.prop_predi_lsgms(tree_vecs)
+
+        return y_L_mu, y_L_lsgms
 
     @staticmethod
     def tensorize(tree_batch):

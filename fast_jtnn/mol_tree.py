@@ -60,8 +60,9 @@ class MolTreeNode(object):
 
 class MolTree(object):
 
-    def __init__(self, smiles):
+    def __init__(self, smiles): # add props as arg
         self.smiles = smiles
+        #self.props = props
         self.mol = get_mol(smiles)
 
         #Stereo Generation (currently disabled)

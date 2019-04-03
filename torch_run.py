@@ -134,6 +134,7 @@ def run():
             objL_res, objU_res, objYpred, predictor_L_out = model(x_L, xs_L, y_L, x_U, xs_U)
             loss = (objL_res * float(batch_size_L) + objU_res * float(batch_size_U))/float(batch_size_L+batch_size_U) + float(batch_size_L)/float(batch_size_L+batch_size_U) * (beta * objYpred)
 
+			############ !!!!!!! comparing y_L and predi(y_U). Are these even matched?
             eval_y_L = y_L.cpu().detach().numpy()
             eval_predictor_L_out = predictor_L_out.cpu().detach().numpy()
             mae = mean_absolute_error(eval_y_L, eval_predictor_L_out)
