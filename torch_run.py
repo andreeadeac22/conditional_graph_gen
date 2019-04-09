@@ -15,9 +15,9 @@ from util import *
 from torch_constants import *
 
 logging.basicConfig(
-	level=logging.INFO,
-	format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
-	datefmt="%Y-%m-%d %H:%M:%S")
+    level=logging.INFO,
+    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S")
 
 def run():
     # data preparation
@@ -112,13 +112,13 @@ def run():
     best_val_loss = float('inf')
     val_log=np.zeros(300)
 
-    for epoch in range(30): # originally 300
+    for epoch in range(300): # originally 300
         model.train()
         [trnX_L, trnXs_L, trnY_L]= permutation([trnX_L, trnXs_L, trnY_L])
         [trnX_U, trnXs_U]= permutation([trnX_U, trnXs_U])
 
 
-        for i in range(1): # n_batch
+        for i in range(n_batch): # n_batch
             start_L=i*batch_size_L
             end_L=start_L+batch_size_L
 
@@ -134,12 +134,11 @@ def run():
             objL_res, objU_res, objYpred, predictor_L_out = model(x_L, xs_L, y_L, x_U, xs_U)
             loss = (objL_res * float(batch_size_L) + objU_res * float(batch_size_U))/float(batch_size_L+batch_size_U) + float(batch_size_L)/float(batch_size_L+batch_size_U) * (beta * objYpred)
 
-			############ !!!!!!! comparing y_L and predi(y_U). Are these even matched?
             eval_y_L = y_L.cpu().detach().numpy()
             eval_predictor_L_out = predictor_L_out.cpu().detach().numpy()
             mae = mean_absolute_error(eval_y_L, eval_predictor_L_out)
             rmse = np.sqrt(mean_squared_error(eval_y_L, eval_predictor_L_out))
-            print("Epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae, rmse, loss.item()))
+            #print("Epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae, rmse, loss.item()))
 
             model.zero_grad()
             #start = time.time()
@@ -148,11 +147,11 @@ def run():
             #total_time += time.time() - start
 
         ## model validation
-        print('::: model validation')
+        #print('::: model validation')
 
         model.eval()
         val_res = []
-        for i in range(1): #10
+        for i in range(10): #10
             start_L=i*batch_size_val_L
             end_L=start_L+batch_size_val_L
 
@@ -177,14 +176,6 @@ def run():
             rmse_valid = np.sqrt(mean_squared_error(eval_y_L, eval_predictor_L_out_valid))
             print("Valid epoch {0:2d} | Batch {1:4d} : MAE {2:2.3f}, RMSE {3:2.3f}, Loss {4:5.3f}".format(epoch, i, mae_valid, rmse_valid, val_loss.item()))
 
-        """
-        if epoch_val_loss < best_val_loss:
-            print('  --> Better validation result, epoch: ', epoch)
-            best_val_loss = epoch_val_loss
-            MODEL_SAVE_PATH = os.path.join('models', 'ssvae' + '_model.pt')
-            torch.save(model.state_dict(), MODEL_SAVE_PATH)
-        """
-
         val_res=np.mean(val_res,axis=0)
         val_log[epoch] = val_res[0]
 
@@ -205,23 +196,26 @@ def run():
     tstX =  torch.tensor(tstX, dtype=torch.float32, device=device)
     predi_Y_mu, predi_Y_lsgms = model.rnn_predictor(tstX)
     tstY_hat = scaler_Y.inverse_transform(predi_Y_mu.cpu().detach().numpy())
-    for j in range(dim_y):
-        print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])])
+    with open("prop_pred.txt", "w") as e:
+        for j in range(dim_y):
+            print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])], file=e)
 
     ## unconditional generation
     print('::: unconditional generation')
-    for t in range(10):
-        smi = model.sampling_unconditional()
-        print([t, smi, get_property(smi)])
+    with open("uncond_gen.txt", "w") as f:
+        for t in range(10):
+            smi = model.sampling_unconditional()
+            print([t, smi, get_property(smi)], file=f)
 
     ## conditional generation (e.g. MolWt=250)
     print('::: conditional generation (e.g. MolWt=250)')
     yid = 0
     ytarget = 250.
     ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
-    for t in range(10):
-        smi = model.sampling_conditional(yid, ytarget_transform)
-        print([t, smi, get_property(smi)])
+    with open("cond_gen_molwt250.txt", "w") as g:
+        for t in range(10):
+            smi = model.sampling_conditional(yid, ytarget_transform)
+            print([t, smi, get_property(smi)], file=g)
 
 
 if __name__ == '__main__':

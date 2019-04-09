@@ -56,10 +56,10 @@ class TorchSSVAE(nn.Module):
         decoder_U_out = self.rnn_decoder(xs_U, torch.cat([z_U_sample, y_U_sample], dim=1))
         x_U_recon = self.softmax(decoder_U_out)
         objU_res = self.objU(x_U, x_U_recon, y_U_mu, y_U_lsgms, z_U_mu, z_U_lsgms)
-        
+
         objYpred_MSE = torch.mean(torch.sum((y_L-y_L_mu) * (y_L-y_L_mu), dim=1))
 
-        return objL_res, objU_res, objYpred_MSE, y_U_mu
+        return objL_res, objU_res, objYpred_MSE, y_L_mu
 
 
     def rnn_predictor(self, x_L):
@@ -157,6 +157,7 @@ class TorchSSVAE(nn.Module):
         return sample_smiles
 
 
+    ## Not sure why argmax on reconstruction (rather than properties) makes sense
     def beam_search(self, z_input, y_input, k=5):
         z_input = torch.tensor(z_input, dtype=torch.float32, device=device)
         y_input = torch.tensor(y_input, dtype=torch.float32, device=device)
