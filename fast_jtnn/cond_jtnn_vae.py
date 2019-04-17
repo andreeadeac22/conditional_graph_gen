@@ -45,6 +45,10 @@ class CondJTNNVAE(nn.Module):
         self.G_mean = nn.Linear(hidden_size, latent_size)
         self.G_var = nn.Linear(hidden_size, latent_size)
 
+        self.infomax_loss = nn.BCEWithLogitsLoss()
+        self.discriminator = nn.Linear(prop_hidden_size + latent_size, 1)
+
+
     def encode(self, jtenc_holder, mpn_holder, props):
         tree_vecs, tree_mess = self.jtnn(*jtenc_holder)
         mol_vecs = self.mpn(*mpn_holder)
@@ -65,8 +69,8 @@ class CondJTNNVAE(nn.Module):
         return z_vecs, kl_loss
 
     def draw_sample(self, mu, lsgms):
-        epsilon = torch.randn(mu.shape).to(device) #by default, mu=0, std=1
-        exp_lsgms = torch.exp(0.5*lsgms).to(device)
+        epsilon = torch.randn(mu.shape).to(cuda_device) #by default, mu=0, std=1
+        exp_lsgms = torch.exp(0.5*lsgms).to(cuda_device)
         sample = torch.add(mu, (exp_lsgms*epsilon))
         return sample
 
@@ -80,10 +84,12 @@ class CondJTNNVAE(nn.Module):
 
 
     def forward(self, x_batch, beta):
-        print("Conditional")
+        #print("Conditional")
         x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder, \
             prop_x_batch, prop_x_jtenc_holder, prop_x_mpn_holder, prop_x_jtmpn_holder, props \
                 = x_batch
+        if torch.cuda.is_available():
+            props = props.cuda()
         props = self.relu(self.prop_dense(props))
         #Labeled
         y_L_mu, y_L_lsgms = self.predi(*prop_x_jtenc_holder)
@@ -92,14 +98,14 @@ class CondJTNNVAE(nn.Module):
         prop_z_mol_vecs, prop_mol_kl = self.rsample(prop_x_mol_vecs, self.G_mean, self.G_var)
 
         cat_decoder = torch.cat((prop_z_tree_vecs, props), dim=1)
-        print("prop_x_batch ", len(prop_x_batch))
-        print("cat_decoder ", cat_decoder.shape)
+        #print("prop_x_batch ", len(prop_x_batch))
+        #print("cat_decoder ", cat_decoder.shape)
 
         prop_word_loss, prop_topo_loss, prop_word_acc, prop_topo_acc = self.decoder(prop_x_batch, cat_decoder)
 
-        print("prop_z_mol_vecs ", prop_z_mol_vecs.shape)
-        print("props ", props.shape)
-        print("prop_x_tree_mess ", prop_x_tree_mess.shape)
+        #print("prop_z_mol_vecs ", prop_z_mol_vecs.shape)
+        #print("props ", props.shape)
+        #print("prop_x_tree_mess ", prop_x_tree_mess.shape)
 
         cat_z_mol = torch.cat((prop_z_mol_vecs, props), dim=1)
         #cat_tree = torch.cat((prop_x_tree_mess, props), dim=1)
@@ -112,9 +118,9 @@ class CondJTNNVAE(nn.Module):
         y_U_mu, y_U_lsgms = self.predi(*x_jtenc_holder)
         y_U_sample = self.draw_sample(y_U_mu, y_U_lsgms)
         x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder, y_U_sample)
-        print("x_tree_vecs ", x_tree_vecs.shape)
-        print("x_tree_mess ", x_tree_mess.shape)
-        print("x_mol_vecs ", x_mol_vecs.shape)
+        #print("x_tree_vecs ", x_tree_vecs.shape)
+        #print("x_tree_mess ", x_tree_mess.shape)
+        #print("x_mol_vecs ", x_mol_vecs.shape)
 
         z_tree_vecs, tree_kl = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
         z_mol_vecs, mol_kl = self.rsample(x_mol_vecs, self.G_mean, self.G_var)
@@ -128,7 +134,27 @@ class CondJTNNVAE(nn.Module):
         u_kl_div = tree_kl + mol_kl
         u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
 
-        return prop_loss + u_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc
+        #### infomax implementation
+        infomax_batch = cat_z_mol
+        shuffle_z = torch.cat((z_mol_vecs, prop_z_mol_vecs), dim=0)
+
+        # With view
+        idx = torch.randperm(shuffle_z.nelement())
+        shuffle_z = shuffle_z.view(-1)[idx].view(shuffle_z.size())
+        shuffled_z = shuffle_z[:infomax_batch.shape[0]]
+        shuffled_infomax_batch = torch.cat((shuffled_z, props), dim=1)
+
+        # discriminator True
+        disc_true = torch.squeeze(self.discriminator(infomax_batch))
+        one_lbl = torch.ones(disc_true.shape[0], device = cuda_device)
+        d_true_loss = self.infomax_loss(disc_true, one_lbl)
+
+        #discriminator False
+        disc_false = torch.squeeze(self.discriminator(shuffled_infomax_batch))
+        zero_lbl = torch.zeros(disc_false.shape[0], device= cuda_device)
+        d_fake_loss = self.infomax_loss(disc_false, zero_lbl)
+
+        return prop_loss + u_loss + (d_true_loss+d_fake_loss)/2, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc
                 #u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc
 
 

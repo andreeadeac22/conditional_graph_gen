@@ -24,8 +24,8 @@ parser.add_argument('--save_dir', required=True)
 parser.add_argument('--load_epoch', type=int, default=0)
 
 parser.add_argument('--hidden_size', type=int, default=450)
-parser.add_argument('--prop_hidden_size', type=int, default=50) #cond
-parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--prop_hidden_size', type=int, default=20) #cond
+parser.add_argument('--batch_size', type=int, default=8)
 parser.add_argument('--latent_size', type=int, default=56)
 parser.add_argument('--depthT', type=int, default=20)
 parser.add_argument('--depthG', type=int, default=3)
@@ -37,12 +37,12 @@ parser.add_argument('--step_beta', type=float, default=0.001)
 parser.add_argument('--max_beta', type=float, default=1.0)
 parser.add_argument('--warmup', type=int, default=40000)
 
-parser.add_argument('--epoch', type=int, default=1)
+parser.add_argument('--epoch', type=int, default=20)
 parser.add_argument('--anneal_rate', type=float, default=0.9)
 parser.add_argument('--anneal_iter', type=int, default=40000)
 parser.add_argument('--kl_anneal_iter', type=int, default=1000)
 parser.add_argument('--print_iter', type=int, default=50)
-parser.add_argument('--save_iter', type=int, default=1)
+parser.add_argument('--save_iter', type=int, default=5000)
 
 args = parser.parse_args()
 print(args)
@@ -82,7 +82,19 @@ meters = np.zeros(5)
 prop_meters = np.zeros(5)
 u_meters = np.zeros(5)
 
+mem_file = open("track_mem.txt", "w")
+
 for epoch in range(args.epoch):
+    print("", file=mem_file)
+    print("Epoch ", epoch, file=mem_file)
+    print("", file=mem_file)
+    import gc
+    for obj in gc.get_objects():
+        try:
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                print(type(obj), obj.size(), file=mem_file)
+        except:
+            pass
     if args.train == "zinc310k-processed":
         loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
     else:

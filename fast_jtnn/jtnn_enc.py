@@ -21,7 +21,7 @@ class JTNNEncoder(nn.Module):
         self.GRU = GraphGRU(hidden_size, hidden_size, depth=depth)
 
     def forward(self, fnode, fmess, node_graph, mess_graph, scope):
-        print("Encoder")
+        #print("Encoder")
         fnode = create_var(fnode)
         fmess = create_var(fmess)
         node_graph = create_var(node_graph)
@@ -43,8 +43,8 @@ class JTNNEncoder(nn.Module):
             batch_vecs.append( cur_vecs )
 
         tree_vecs = torch.stack(batch_vecs, dim=0)
-        print("tree_vecs ", tree_vecs.shape)
-        print("messages ", messages.shape)
+        #print("tree_vecs ", tree_vecs.shape)
+        #print("messages ", messages.shape)
         return tree_vecs, messages
 
     @staticmethod
@@ -117,7 +117,7 @@ class GraphGRU(nn.Module):
             h_nei = index_select_ND(h, 0, mess_graph)
             sum_h = h_nei.sum(dim=1)
             z_input = torch.cat([x, sum_h], dim=1)
-            z = F.sigmoid(self.W_z(z_input))
+            z = torch.sigmoid(self.W_z(z_input))
 
             r_1 = self.W_r(x).view(-1, 1, self.hidden_size)
             r_2 = self.U_r(h_nei)
@@ -126,7 +126,7 @@ class GraphGRU(nn.Module):
             gated_h = r * h_nei
             sum_gated_h = gated_h.sum(dim=1)
             h_input = torch.cat([x, sum_gated_h], dim=1)
-            pre_h = F.tanh(self.W_h(h_input))
+            pre_h = torch.tanh(self.W_h(h_input))
             h = (1.0 - z) * sum_h + z * pre_h
             h = h * mask
 

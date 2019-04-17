@@ -19,7 +19,7 @@ class JTNNPredi(nn.Module):
             nn.ReLU()
         )
         self.GRU = GraphGRU(hidden_size, hidden_size, depth=depth)
-        
+
         self.prop_predi_mu = nn.Linear(hidden_size, prop_hidden_size)
         self.prop_predi_lsgms = nn.Linear(hidden_size, prop_hidden_size)
 
@@ -131,7 +131,7 @@ class GraphGRU(nn.Module):
             gated_h = r * h_nei
             sum_gated_h = gated_h.sum(dim=1)
             h_input = torch.cat([x, sum_gated_h], dim=1)
-            pre_h = F.tanh(self.W_h(h_input))
+            pre_h = torch.tanh(self.W_h(h_input))
             h = (1.0 - z) * sum_h + z * pre_h
             h = h * mask
 

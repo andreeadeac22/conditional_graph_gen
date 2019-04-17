@@ -72,6 +72,7 @@ class SSMolTreeFolder(object):
     def __iter__(self):
         print("SSMolTreeFolder iter")
         for id in range(len(self.data_files_u)):
+            #if id > 3: continue
             fn_prop = os.path.join(self.data_folder,self.data_files_prop[id])
             fn_u = os.path.join(self.data_folder,self.data_files_u[id])
             print("fn ", fn_prop, fn_u)
