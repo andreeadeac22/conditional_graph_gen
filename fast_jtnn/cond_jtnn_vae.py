@@ -134,9 +134,14 @@ class CondJTNNVAE(nn.Module):
 
         u_kl_div = tree_kl + mol_kl
         u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms))
+        """
         print("u_kld_y ", u_kld_y)
+        if(u_kld_y > 10000):
+            print("y_U_mu ", y_U_mu)
+            print("y_U_lsgms ", y_U_lsgms)
+        """
         u_loss = u_kld_y + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
-        print("u_loss ", u_loss)
+        #print("u_loss ", u_loss)
 
         objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
 
@@ -168,53 +173,21 @@ class CondJTNNVAE(nn.Module):
 
     def noniso_logpdf(self, x):
         # log(p(y)) where p(y) is multivariate gaussian
-        deviations = x - self.mu_prior # 100,3
-        cov_inverse = torch.inverse(self.cov_prior) # 3x3
-        prod = torch.mm(deviations, cov_inverse)
-        su = torch.sum( prod * deviations, dim=1)
-        return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) + su )
+        return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) \
+            + torch.sum( torch.mm((x - self.mu_prior), torch.inverse(self.cov_prior)) * (x - self.mu_prior), dim=1) )
 
 
     def noniso_KLD(self, mu, log_sigma_sq):
-        #print("mu ", mu)
-        #print("log_sigma_sq ", log_sigma_sq)
-        est_deviation = self.mu_prior - mu
-        #print("est_deviation ", est_deviation)
-        cov_inverse = torch.inverse(self.cov_prior)
-        #print("cov_inverse ", cov_inverse)
-        multi = torch.mm(est_deviation, cov_inverse)
-        #print("multi ", multi)
-        prod = multi * est_deviation
-        #print("prod ", prod)
-        sum = torch.sum(prod, dim=1)
-        #print("sum ", sum)
-        log_det = np.log(np.linalg.det(self.cov_prior.cpu()))
-        #print("log_det ", log_det)
-        float_shape = float(self.cov_prior.shape[0])
-        #print("float_shape ", float_shape)
-
-        noniso_logpdf_val = sum - float_shape + log_det
-        #print("noniso_logpdf_val ", noniso_logpdf_val)
         exp_sgm = torch.exp(log_sigma_sq) # exp_sgm.shape is (100,3)
-        #print("exp_sgm ", exp_sgm)
         all_traces = []
         for i in range(exp_sgm.shape[0]):
-            diagonal = torch.diag(exp_sgm[i])
-            #print("diagonal ", diagonal)
-            inv_diag = torch.mm(cov_inverse, diagonal)
-            #print("inv_diag ", inv_diag)
-            trace = torch.trace(inv_diag)
-            #print("trace ", trace)
-            all_traces.append(trace)
+            all_traces.append(torch.trace(torch.mm(torch.inverse(self.cov_prior), torch.diag(exp_sgm[i]))))
+        del exp_sgm
         all_traces = torch.tensor(all_traces, device=cuda_device)
         #print("all_traces ", all_traces)
-        #sum_all_traces = torch.sum(all_traces)
-        #print("sum_all_traces ", sum_all_traces)
-        sum_log_sigma = torch.sum(log_sigma_sq, dim=1)
-        #print("sum_log_sigma ", sum_log_sigma)
-        result = 0.5 * ( all_traces + noniso_logpdf_val - sum_log_sigma)
-        #print("result ", result)
-        return result
+        return 0.5 * ( all_traces  \
+            + torch.sum( torch.mm((self.mu_prior - mu), torch.inverse(self.cov_prior)) * (self.mu_prior - mu), dim=1) - float(self.cov_prior.shape[0]) + np.log(np.linalg.det(self.cov_prior.cpu())) \
+            - torch.sum(log_sigma_sq, dim=1))
 
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):

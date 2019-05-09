@@ -134,9 +134,9 @@ for epoch in range(args.epoch):
         #    continue
 
         #meters = meters + np.array([tree_kl, mol_kl, wacc * 100, tacc * 100, sacc * 100])
-        meters = meters + np.array([loss, prop_loss, u_loss, objYpred_MSE, d_true_loss, d_fake_loss])
-        prop_meters = prop_meters + np.array([prop_tree_kl, prop_mol_kl, prop_word_acc *100, prop_topo_acc*100, prop_assm_acc*100, prop_log_prior_y])
-        u_meters = u_meters + np.array([tree_kl, mol_kl, u_word_acc*100, u_topo_acc*100, u_assm_acc*100, u_kld_y])
+        meters = meters + np.array([float(loss), float(prop_loss), float(u_loss), float(objYpred_MSE), float(d_true_loss), float(d_fake_loss)])
+        prop_meters = prop_meters + np.array([float(prop_tree_kl), float(prop_mol_kl), float(prop_word_acc *100), float(prop_topo_acc*100), float(prop_assm_acc*100), float(prop_log_prior_y)])
+        u_meters = u_meters + np.array([float(tree_kl), float(mol_kl), float(u_word_acc*100), float(u_topo_acc*100), float(u_assm_acc*100), float(u_kld_y)])
 
         if total_step % args.print_iter == 0:
             meters /= args.print_iter
