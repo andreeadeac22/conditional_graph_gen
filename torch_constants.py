@@ -15,7 +15,7 @@ dim_z = 100
 dim_h = 250
 
 n_hidden = 3
-batch_size = 200
+batch_size = 128
 
 beta=10000
 

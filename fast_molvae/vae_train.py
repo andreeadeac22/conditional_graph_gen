@@ -11,6 +11,7 @@ import argparse
 from collections import deque
 import _pickle as pickle
 import rdkit
+import gc
 
 from fast_jtnn import *
 
@@ -24,8 +25,8 @@ parser.add_argument('--save_dir', required=True)
 parser.add_argument('--load_epoch', type=int, default=0)
 
 parser.add_argument('--hidden_size', type=int, default=450)
-parser.add_argument('--prop_hidden_size', type=int, default=20) #cond
-parser.add_argument('--batch_size', type=int, default=8)
+parser.add_argument('--prop_hidden_size', type=int, default=3) #cond
+parser.add_argument('--batch_size', type=int, default=16)
 parser.add_argument('--latent_size', type=int, default=56)
 parser.add_argument('--depthT', type=int, default=20)
 parser.add_argument('--depthG', type=int, default=3)
@@ -44,6 +45,8 @@ parser.add_argument('--kl_anneal_iter', type=int, default=1000)
 parser.add_argument('--print_iter', type=int, default=50)
 parser.add_argument('--save_iter', type=int, default=5000)
 
+parser.add_argument('--infomax', type=int, default=1)
+
 args = parser.parse_args()
 print(args)
 
@@ -51,7 +54,7 @@ vocab = [x.strip("\r\n ") for x in open(args.vocab)]
 vocab = Vocab(vocab)
 
 if args.train == "zinc310k-processed":
-    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG)
+    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax)
 else:
     model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG)
 if torch.cuda.is_available():
@@ -78,34 +81,51 @@ grad_norm = lambda m: math.sqrt(sum([p.grad.norm().item() ** 2 for p in m.parame
 
 total_step = args.load_epoch
 beta = args.beta
-meters = np.zeros(5)
-prop_meters = np.zeros(5)
-u_meters = np.zeros(5)
+meters = np.zeros(6)
+prop_meters = np.zeros(6)
+u_meters = np.zeros(6)
 
 mem_file = open("track_mem.txt", "w")
 
+if args.train == "zinc310k-processed":
+    loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
+else:
+    loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
+
 for epoch in range(args.epoch):
-    print("", file=mem_file)
-    print("Epoch ", epoch, file=mem_file)
-    print("", file=mem_file)
-    import gc
+    print("Epoch ", epoch)
+    print("", file=mem_file, flush=True)
+    print("Epoch ", epoch, file=mem_file, flush=True)
+    print("", file=mem_file, flush=True)
+    nb_tensors = 0
+    nb_par = 0
     for obj in gc.get_objects():
         try:
             if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-                print(type(obj), obj.size(), file=mem_file)
+                if "Parameter" in str(type(obj)):
+                    nb_par +=1
+                else:
+                    nb_tensors +=1
+                print(type(obj), obj.size(), file=mem_file, flush=True)
         except:
             pass
-    if args.train == "zinc310k-processed":
-        loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
-    else:
-        loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
+    print("nb_tensors ", nb_tensors)
+    print("nb_par ", nb_par)
+    nbb = 0
     for batch in loader:
+        #if nbb > 5:
+        #    break
+        nbb += 1
         #print("batch ")
         #print(batch)
         total_step += 1
         #try:
         model.zero_grad()
-        loss, tree_kl, mol_kl, wacc, tacc, sacc = model(batch, beta)
+        loss, \
+        prop_loss, prop_tree_kl, prop_mol_kl, prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
+        u_loss, tree_kl, mol_kl, u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
+        objYpred_MSE, d_true_loss, d_fake_loss = model(batch, beta)
+
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), args.clip_norm)
         optimizer.step()
@@ -113,11 +133,25 @@ for epoch in range(args.epoch):
         #    print(e)
         #    continue
 
-        meters = meters + np.array([tree_kl, mol_kl, wacc * 100, tacc * 100, sacc * 100])
+        #meters = meters + np.array([tree_kl, mol_kl, wacc * 100, tacc * 100, sacc * 100])
+        meters = meters + np.array([loss, prop_loss, u_loss, objYpred_MSE, d_true_loss, d_fake_loss])
+        prop_meters = prop_meters + np.array([prop_tree_kl, prop_mol_kl, prop_word_acc *100, prop_topo_acc*100, prop_assm_acc*100, prop_log_prior_y])
+        u_meters = u_meters + np.array([tree_kl, mol_kl, u_word_acc*100, u_topo_acc*100, u_assm_acc*100, u_kld_y])
 
         if total_step % args.print_iter == 0:
             meters /= args.print_iter
-            print("[%d] Beta: %.3f, KL: %.2f, %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, PNorm: %.2f, GNorm: %.2f" % (total_step, beta, meters[0], meters[1], meters[2], meters[3], meters[4], param_norm(model), grad_norm(model)))
+            prop_meters /= args.print_iter
+            u_meters /= args.print_iter
+
+            print("[%d] Beta: %.3f, Loss: %.2f, Prop_loss: %.2f, U_loss: %.2f, YMSE: %.2f, DTrue: %.2f, DFalse: %.2f, PNorm: %.2f, GNorm: %.2f" \
+                %(total_step, beta, meters[0], meters[1], meters[2], meters[3], meters[4], meters[5], param_norm(model), grad_norm(model)))
+
+            print("[%d] Prop_KL: %.2f, %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, Log_prior_y: %.2f" \
+                % (total_step, prop_meters[0], prop_meters[1], prop_meters[2], prop_meters[3], prop_meters[4], prop_meters[5]))
+
+            print("[%d] Unsup_KL: %.2f, %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, U_kld_y: %.2f" \
+                % (total_step, u_meters[0], u_meters[1], u_meters[2], u_meters[3], u_meters[4], u_meters[5]))
+            print()
             sys.stdout.flush()
             meters *= 0
 

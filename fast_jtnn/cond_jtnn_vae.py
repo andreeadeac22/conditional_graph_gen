@@ -2,13 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import rdkit
+import numpy as np
 import rdkit.Chem as Chem
 import copy, math
 
 from .mol_tree import Vocab, MolTree
 from .nnutils import create_var, flatten_tensor, avg_pool
 from .jtnn_enc import JTNNEncoder
-from .jtnn_dec import JTNNDecoder
+from .cond_jtnn_dec import CondJTNNDecoder
 from .jtnn_predi import JTNNPredi
 from .mpn import MPN
 from .jtmpn import JTMPN
@@ -18,15 +19,15 @@ from .constants import *
 
 class CondJTNNVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG):
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor):
         super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = hidden_size
-        self.latent_size = latent_size = int(latent_size / 2) #Tree and Mol has two vectors
+        self.latent_size = latent_size = int(latent_size / 2) #Tree and Mol have two vectors
 
         self.predi = JTNNPredi(hidden_size, prop_hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
         self.jtnn = JTNNEncoder(hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
-        self.decoder = JTNNDecoder(vocab, hidden_size, prop_hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
+        self.decoder = CondJTNNDecoder(vocab, hidden_size, prop_hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
 
         self.prop_dense = nn.Linear(num_prop, prop_hidden_size)
         self.relu = nn.ReLU()
@@ -47,6 +48,11 @@ class CondJTNNVAE(nn.Module):
 
         self.infomax_loss = nn.BCEWithLogitsLoss()
         self.discriminator = nn.Linear(prop_hidden_size + latent_size, 1)
+
+        self.mu_prior = torch_mu_prior
+        self.cov_prior = torch_cov_prior
+
+        self.infomax_factor = infomax_factor
 
 
     def encode(self, jtenc_holder, mpn_holder, props):
@@ -74,6 +80,11 @@ class CondJTNNVAE(nn.Module):
         sample = torch.add(mu, (exp_lsgms*epsilon))
         return sample
 
+    def sampling_unconditional(self):
+        z_tree = torch.randn(1, self.latent_size).cuda()
+        z_mol = torch.randn(1, self.latent_size).cuda()
+        sample_y=np.random.multivariate_normal(self.mu_prior, self.cov_prior, 1)
+
     def sample_prior(self, prob_decode=False):
         z_tree = torch.randn(1, self.latent_size)
         z_mol = torch.randn(1, self.latent_size)
@@ -90,7 +101,7 @@ class CondJTNNVAE(nn.Module):
                 = x_batch
         if torch.cuda.is_available():
             props = props.cuda()
-        props = self.relu(self.prop_dense(props))
+        #props = self.relu(self.prop_dense(props)) -- in original SSVAE there is none
         #Labeled
         y_L_mu, y_L_lsgms = self.predi(*prop_x_jtenc_holder)
         prop_x_tree_vecs, prop_x_tree_mess, prop_x_mol_vecs = self.encode(prop_x_jtenc_holder, prop_x_mpn_holder, props)
@@ -98,29 +109,19 @@ class CondJTNNVAE(nn.Module):
         prop_z_mol_vecs, prop_mol_kl = self.rsample(prop_x_mol_vecs, self.G_mean, self.G_var)
 
         cat_decoder = torch.cat((prop_z_tree_vecs, props), dim=1)
-        #print("prop_x_batch ", len(prop_x_batch))
-        #print("cat_decoder ", cat_decoder.shape)
-
         prop_word_loss, prop_topo_loss, prop_word_acc, prop_topo_acc = self.decoder(prop_x_batch, cat_decoder)
 
-        #print("prop_z_mol_vecs ", prop_z_mol_vecs.shape)
-        #print("props ", props.shape)
-        #print("prop_x_tree_mess ", prop_x_tree_mess.shape)
-
         cat_z_mol = torch.cat((prop_z_mol_vecs, props), dim=1)
-        #cat_tree = torch.cat((prop_x_tree_mess, props), dim=1)
         prop_assm_loss, prop_assm_acc = self.assm(prop_x_batch, prop_x_jtmpn_holder, cat_z_mol, prop_x_tree_mess)
 
         prop_kl_div = prop_tree_kl + prop_mol_kl
-        prop_loss = prop_word_loss + prop_topo_loss + prop_assm_loss + beta * prop_kl_div
+        prop_log_prior_y = torch.mean(self.noniso_logpdf(props))
+        prop_loss = prop_log_prior_y + prop_word_loss + prop_topo_loss + prop_assm_loss + beta * prop_kl_div
 
         #Unlabeled
         y_U_mu, y_U_lsgms = self.predi(*x_jtenc_holder)
         y_U_sample = self.draw_sample(y_U_mu, y_U_lsgms)
         x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder, y_U_sample)
-        #print("x_tree_vecs ", x_tree_vecs.shape)
-        #print("x_tree_mess ", x_tree_mess.shape)
-        #print("x_mol_vecs ", x_mol_vecs.shape)
 
         z_tree_vecs, tree_kl = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
         z_mol_vecs, mol_kl = self.rsample(x_mol_vecs, self.G_mean, self.G_var)
@@ -132,7 +133,12 @@ class CondJTNNVAE(nn.Module):
         u_assm_loss, u_assm_acc = self.assm(x_batch, x_jtmpn_holder, u_cat_z_mol, x_tree_mess)
 
         u_kl_div = tree_kl + mol_kl
-        u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+        u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms))
+        print("u_kld_y ", u_kld_y)
+        u_loss = u_kld_y + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+        print("u_loss ", u_loss)
+
+        objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
 
         #### infomax implementation
         infomax_batch = cat_z_mol
@@ -154,9 +160,61 @@ class CondJTNNVAE(nn.Module):
         zero_lbl = torch.zeros(disc_false.shape[0], device= cuda_device)
         d_fake_loss = self.infomax_loss(disc_false, zero_lbl)
 
-        return prop_loss + u_loss + (d_true_loss+d_fake_loss)/2, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc
-                #u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc
+        return prop_loss + u_loss + objYpred_MSE + self.infomax_factor/2*(d_true_loss+d_fake_loss), \
+            prop_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
+            u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
+            objYpred_MSE, self.infomax_factor/2*d_true_loss, self.infomax_factor/2*d_fake_loss
 
+
+    def noniso_logpdf(self, x):
+        # log(p(y)) where p(y) is multivariate gaussian
+        deviations = x - self.mu_prior # 100,3
+        cov_inverse = torch.inverse(self.cov_prior) # 3x3
+        prod = torch.mm(deviations, cov_inverse)
+        su = torch.sum( prod * deviations, dim=1)
+        return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) + su )
+
+
+    def noniso_KLD(self, mu, log_sigma_sq):
+        #print("mu ", mu)
+        #print("log_sigma_sq ", log_sigma_sq)
+        est_deviation = self.mu_prior - mu
+        #print("est_deviation ", est_deviation)
+        cov_inverse = torch.inverse(self.cov_prior)
+        #print("cov_inverse ", cov_inverse)
+        multi = torch.mm(est_deviation, cov_inverse)
+        #print("multi ", multi)
+        prod = multi * est_deviation
+        #print("prod ", prod)
+        sum = torch.sum(prod, dim=1)
+        #print("sum ", sum)
+        log_det = np.log(np.linalg.det(self.cov_prior.cpu()))
+        #print("log_det ", log_det)
+        float_shape = float(self.cov_prior.shape[0])
+        #print("float_shape ", float_shape)
+
+        noniso_logpdf_val = sum - float_shape + log_det
+        #print("noniso_logpdf_val ", noniso_logpdf_val)
+        exp_sgm = torch.exp(log_sigma_sq) # exp_sgm.shape is (100,3)
+        #print("exp_sgm ", exp_sgm)
+        all_traces = []
+        for i in range(exp_sgm.shape[0]):
+            diagonal = torch.diag(exp_sgm[i])
+            #print("diagonal ", diagonal)
+            inv_diag = torch.mm(cov_inverse, diagonal)
+            #print("inv_diag ", inv_diag)
+            trace = torch.trace(inv_diag)
+            #print("trace ", trace)
+            all_traces.append(trace)
+        all_traces = torch.tensor(all_traces, device=cuda_device)
+        #print("all_traces ", all_traces)
+        #sum_all_traces = torch.sum(all_traces)
+        #print("sum_all_traces ", sum_all_traces)
+        sum_log_sigma = torch.sum(log_sigma_sq, dim=1)
+        #print("sum_log_sigma ", sum_log_sigma)
+        result = 0.5 * ( all_traces + noniso_logpdf_val - sum_log_sigma)
+        #print("result ", result)
+        return result
 
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):

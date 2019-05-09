@@ -201,7 +201,6 @@ class TorchSSVAE(nn.Module):
         cov_inverse = torch.inverse(self.cov_prior) # 3x3
         prod = torch.mm(deviations, cov_inverse)
         su = torch.sum( prod * deviations, dim=1)
-
         return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) + su )
 
 

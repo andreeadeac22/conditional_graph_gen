@@ -10,10 +10,10 @@ from .chemutils import enum_assemble, set_atommap
 MAX_NB = 15
 MAX_DECODE_LEN = 100
 
-class JTNNDecoder(nn.Module):
+class CondJTNNDecoder(nn.Module):
 
-    def __init__(self, vocab, hidden_size, latent_size, embedding):
-        super(JTNNDecoder, self).__init__()
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, embedding):
+        super(CondJTNNDecoder, self).__init__()
         self.hidden_size = hidden_size
         self.vocab_size = vocab.size()
         self.vocab = vocab
@@ -28,10 +28,10 @@ class JTNNDecoder(nn.Module):
         #Word Prediction Weights
         #print("hidden_size ", hidden_size)
         #print("latent size ", latent_size)
-        self.W = nn.Linear(hidden_size + latent_size, hidden_size)
+        self.W = nn.Linear(hidden_size + latent_size + prop_hidden_size, hidden_size)
 
         #Stop Prediction Weights
-        self.U = nn.Linear(hidden_size + latent_size, hidden_size)
+        self.U = nn.Linear(hidden_size + latent_size + prop_hidden_size, hidden_size)
         self.U_i = nn.Linear(2 * hidden_size, hidden_size)
 
         #Output Weights
