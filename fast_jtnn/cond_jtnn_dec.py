@@ -60,6 +60,7 @@ class CondJTNNDecoder(nn.Module):
         output_vec = F.relu( V(input_vec) )
         return V_o(output_vec)
 
+
     def forward(self, mol_batch, x_tree_vecs):
         pred_hiddens,pred_contexts,pred_targets = [],[],[]
         stop_hiddens,stop_contexts,stop_targets = [],[],[]
@@ -195,6 +196,7 @@ class CondJTNNDecoder(nn.Module):
         stop_acc = torch.sum(stop_acc) / stop_targets.nelement()
 
         return pred_loss, stop_loss, pred_acc.item(), stop_acc.item()
+
 
     def decode(self, x_tree_vecs, prob_decode):
         assert x_tree_vecs.size(0) == 1

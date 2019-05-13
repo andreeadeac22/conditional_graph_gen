@@ -19,7 +19,7 @@ from .constants import *
 
 class CondJTNNVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor):
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor, u_kld_factor):
         super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = hidden_size
@@ -53,6 +53,7 @@ class CondJTNNVAE(nn.Module):
         self.cov_prior = torch_cov_prior
 
         self.infomax_factor = infomax_factor
+        self.u_kld_factor = u_kld_factor
 
 
     def encode(self, jtenc_holder, mpn_holder, props):
@@ -74,24 +75,12 @@ class CondJTNNVAE(nn.Module):
         z_vecs = z_mean + torch.exp(z_log_var / 2) * epsilon
         return z_vecs, kl_loss
 
+
     def draw_sample(self, mu, lsgms):
         epsilon = torch.randn(mu.shape).to(cuda_device) #by default, mu=0, std=1
         exp_lsgms = torch.exp(0.5*lsgms).to(cuda_device)
         sample = torch.add(mu, (exp_lsgms*epsilon))
         return sample
-
-    def sampling_unconditional(self):
-        z_tree = torch.randn(1, self.latent_size).cuda()
-        z_mol = torch.randn(1, self.latent_size).cuda()
-        sample_y=np.random.multivariate_normal(self.mu_prior, self.cov_prior, 1)
-
-    def sample_prior(self, prob_decode=False):
-        z_tree = torch.randn(1, self.latent_size)
-        z_mol = torch.randn(1, self.latent_size)
-        if torch.cuda.is_available():
-            z_tree = z_tree.cuda()
-            z_mol = z_mol.cuda()
-        return self.decode(z_tree, z_mol, prob_decode)
 
 
     def forward(self, x_batch, beta):
@@ -112,6 +101,7 @@ class CondJTNNVAE(nn.Module):
         prop_word_loss, prop_topo_loss, prop_word_acc, prop_topo_acc = self.decoder(prop_x_batch, cat_decoder)
 
         cat_z_mol = torch.cat((prop_z_mol_vecs, props), dim=1)
+        torch.cuda.empty_cache()
         prop_assm_loss, prop_assm_acc = self.assm(prop_x_batch, prop_x_jtmpn_holder, cat_z_mol, prop_x_tree_mess)
 
         prop_kl_div = prop_tree_kl + prop_mol_kl
@@ -130,6 +120,7 @@ class CondJTNNVAE(nn.Module):
         u_word_loss, u_topo_loss, u_word_acc, u_topo_acc = self.decoder(x_batch, u_cat_decoder)
 
         u_cat_z_mol = torch.cat((z_mol_vecs, y_U_sample), dim=1)
+        torch.cuda.empty_cache()
         u_assm_loss, u_assm_acc = self.assm(x_batch, x_jtmpn_holder, u_cat_z_mol, x_tree_mess)
 
         u_kl_div = tree_kl + mol_kl
@@ -140,7 +131,7 @@ class CondJTNNVAE(nn.Module):
             print("y_U_mu ", y_U_mu)
             print("y_U_lsgms ", y_U_lsgms)
         """
-        u_loss = u_kld_y + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+        u_loss = u_kld_y/self.u_kld_factor + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
         #print("u_loss ", u_loss)
 
         objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
@@ -171,6 +162,43 @@ class CondJTNNVAE(nn.Module):
             objYpred_MSE, self.infomax_factor/2*d_true_loss, self.infomax_factor/2*d_fake_loss
 
 
+    def sampling_unconditional(self, prob_decode=False):
+        z_tree = torch.randn(1, self.latent_size)
+        z_mol = torch.randn(1, self.latent_size)
+        if torch.cuda.is_available():
+            z_tree = z_tree.cuda()
+            z_mol = z_mol.cuda()
+        sample_y=np.random.multivariate_normal(self.mu_prior.cpu(), self.cov_prior.cpu(), 1)
+        return self.decode(z_tree, z_mol, prob_decode, sample_y)
+
+
+    def sampling_conditional(self, yid, ytarget):
+        def random_cond_normal(yid, ytarget):
+            id2=[yid]
+            id1=np.setdiff1d([0,1,2],id2)
+            mu1=self.mu_prior[id1].cpu().numpy()
+            mu2=self.mu_prior[id2].cpu().numpy()
+            cov11=self.cov_prior[id1][:,id1].cpu().numpy()
+            cov12=self.cov_prior[id1][:,id2].cpu().numpy()
+            cov22=self.cov_prior[id2][:,id2].cpu().numpy()
+            cov21=self.cov_prior[id2][:,id1].cpu().numpy()
+
+            cond_mu=np.transpose(mu1.T+np.matmul(cov12, np.linalg.inv(cov22)) * (ytarget-mu2))[0]
+            cond_cov=cov11 - np.matmul(np.matmul(cov12, np.linalg.inv(cov22)), cov21)
+
+            marginal_sampled=np.random.multivariate_normal(cond_mu, cond_cov, 1)
+
+            tst=np.zeros(3)
+            tst[id1]=marginal_sampled
+            tst[id2]=ytarget
+            return np.asarray([tst])
+
+        sample_z=np.random.randn(1, self.dim_z)
+        sample_y=random_cond_normal(yid, ytarget)
+        sample_smiles=self.beam_search(sample_z, sample_y, k=5)
+        return sample_smiles
+
+
     def noniso_logpdf(self, x):
         # log(p(y)) where p(y) is multivariate gaussian
         return - 0.5 * (float(self.cov_prior.shape[0]) * np.log(2.*np.pi) +  np.log(np.linalg.det(self.cov_prior.cpu())) \
@@ -192,7 +220,9 @@ class CondJTNNVAE(nn.Module):
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):
         jtmpn_holder,batch_idx = jtmpn_holder
+        #print("batch_idx ", batch_idx)
         fatoms,fbonds,agraph,bgraph,scope = jtmpn_holder
+        # maybe del jtmpn_holder ?
         batch_idx = create_var(batch_idx)
 
         cand_vecs = self.jtmpn(fatoms, fbonds, agraph, bgraph, scope, x_tree_mess)

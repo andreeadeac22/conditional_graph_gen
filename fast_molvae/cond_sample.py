@@ -6,61 +6,77 @@ import argparse
 from fast_jtnn import *
 import rdkit
 
-lg = rdkit.RDLogger.logger()
-lg.setLevel(rdkit.RDLogger.CRITICAL)
+from fast_jtnn import *
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--nsample', type=int, required=True)
-parser.add_argument('--vocab', required=True)
-parser.add_argument('--model', required=True)
+def get_property(smi):
 
-parser.add_argument('--hidden_size', type=int, default=450)
-parser.add_argument('--latent_size', type=int, default=56)
-parser.add_argument('--depthT', type=int, default=20)
-parser.add_argument('--depthG', type=int, default=3)
+    try:
+        mol=Chem.MolFromSmiles(smi)
+        property = [Descriptors.ExactMolWt(mol), Descriptors.MolLogP(mol), QED.qed(mol)]
 
-args = parser.parse_args()
+    except:
+        property = 'invalid'
 
-vocab = [x.strip("\r\n ") for x in open(args.vocab)]
-vocab = Vocab(vocab)
+    return property
 
-model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG)
+if __name__ == "__main__":
+    lg = rdkit.RDLogger.logger()
+    lg.setLevel(rdkit.RDLogger.CRITICAL)
 
-model.load_state_dict(torch.load(args.model))
-model = model.cuda()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--nsample', type=int, required=True)
+    parser.add_argument('--vocab', required=True)
+    parser.add_argument('--model', required=True)
 
-torch.manual_seed(0)
+    parser.add_argument('--hidden_size', type=int, default=450)
+    parser.add_argument('--latent_size', type=int, default=56)
+    parser.add_argument('--depthT', type=int, default=20)
+    parser.add_argument('--depthG', type=int, default=3)
 
-def sampling_unconditional():
-    z_tree = torch.randn(1, args.latent_size).cuda()
-    z_mol = torch.randn(1, args.latent_size).cuda()
+    args = parser.parse_args()
 
-    
-
-for i in xrange(args.nsample):
-    print model.sample_prior()
-    z_tree = torch.randn(1, self.latent_size).cuda()
-    z_mol = torch.randn(1, self.latent_size).cuda()
-    return self.decode(z_tree, z_mol, prob_decode)
+    vocab = [x.strip("\r\n ") for x in open(args.vocab)]
+    vocab = Vocab(vocab)
 
 
-## unconditional generation
-for t in range(10):
-    smi = model.sampling_unconditional()
-    sample_z=np.random.randn(1, self.dim_z)
-    sample_y=np.random.multivariate_normal(self.mu_prior, self.cov_prior, 1)
 
-        sample_smiles=self.beam_search(sample_z, sample_y, k=5)
+    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG)
 
-        return sample_smiles
+    model.load_state_dict(torch.load(args.model))
 
-    print([t, smi, get_property(smi)])
+    if torch.cuda.is_available():
+        model = model.cuda()
 
-## conditional generation (e.g. MolWt=250)
-yid = 0
-ytarget = 250.
-ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
+    f = open(path + "test.pickle", "rb")
+    data = pickle.load(f)
+    tstX_L = list(data['tstX_L'])
+    tstY_L = list(data['tstY_L'])
+    tstX_U = list(data['tstX_U'])
+    # model testing
+    print('::: model testing')
 
-for t in range(10):
-    smi = model.sampling_conditional(yid, ytarget_transform)
-    print([t, smi, get_property(smi)])
+    # property prediction performance
+    print('::: property prediction performance')
+    tstX =  torch.tensor(tstX, dtype=torch.float32, device=device)
+    predi_y_L_mu, predi_y_L_lsgms = model.predi(tstX)
+    tstY_hat = scaler_Y.inverse_transform(predi_y_L_mu.cpu().detach().numpy())
+    with open("prop_pred.txt", "w") as e:
+        for j in range(dim_y):
+            print([j, mean_absolute_error(tstY_L[:,j], tstY_hat[:,j])], file=e)
+
+    ## unconditional generation
+    print('::: unconditional generation')
+    with open("uncond_gen.txt", "w") as f:
+        for t in range(10):
+            smi = model.sampling_unconditional()
+            print([t, smi, get_property(smi)], file=f)
+
+    ## conditional generation (e.g. MolWt=250)
+    print('::: conditional generation (e.g. MolWt=250)')
+    yid = 0
+    ytarget = 250.
+    ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
+    with open("cond_gen_molwt250.txt", "w") as g:
+        for t in range(10):
+            smi = model.sampling_conditional(yid, ytarget_transform)
+            print([t, smi, get_property(smi)], file=g)

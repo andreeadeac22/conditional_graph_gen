@@ -12,6 +12,7 @@ from collections import deque
 import _pickle as pickle
 import rdkit
 import gc
+#import nvgpu
 
 from fast_jtnn import *
 
@@ -46,6 +47,7 @@ parser.add_argument('--print_iter', type=int, default=50)
 parser.add_argument('--save_iter', type=int, default=5000)
 
 parser.add_argument('--infomax', type=int, default=1)
+parser.add_argument('--u_kld', type=int, default=1)
 
 args = parser.parse_args()
 print(args)
@@ -54,7 +56,7 @@ vocab = [x.strip("\r\n ") for x in open(args.vocab)]
 vocab = Vocab(vocab)
 
 if args.train == "zinc310k-processed":
-    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax)
+    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax, args.u_kld)
 else:
     model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG)
 if torch.cuda.is_available():
@@ -67,14 +69,19 @@ for param in model.parameters():
     else:
         nn.init.xavier_normal_(param)
 
-if args.load_epoch > 0:
-    model.load_state_dict(torch.load(args.save_dir + "/model.iter-" + str(args.load_epoch)))
-
-print("Model #Params: %dK" % (sum([x.nelement() for x in model.parameters()]) / 1000,))
-
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
 scheduler = lr_scheduler.ExponentialLR(optimizer, args.anneal_rate)
 scheduler.step()
+
+st_epoch = 0
+
+if args.load_epoch > 0:
+    checkpoint = torch.load(args.save_dir + "/model.iter-" + str(args.load_epoch))
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    st_epoch = checkpoint['epoch']
+
+print("Model #Params: %dK" % (sum([x.nelement() for x in model.parameters()]) / 1000,))
 
 param_norm = lambda m: math.sqrt(sum([p.norm().item() ** 2 for p in m.parameters()]))
 grad_norm = lambda m: math.sqrt(sum([p.grad.norm().item() ** 2 for p in m.parameters() if p.grad is not None]))
@@ -85,18 +92,18 @@ meters = np.zeros(6)
 prop_meters = np.zeros(6)
 u_meters = np.zeros(6)
 
-mem_file = open("track_mem.txt", "w")
+mem_file = open(args.save_dir + "track_mem.txt", "w")
 
 if args.train == "zinc310k-processed":
     loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
 else:
     loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
 
-for epoch in range(args.epoch):
+for epoch in range(st_epoch, args.epoch):
     print("Epoch ", epoch)
-    print("", file=mem_file, flush=True)
-    print("Epoch ", epoch, file=mem_file, flush=True)
-    print("", file=mem_file, flush=True)
+    #print("", file=mem_file, flush=True)
+    #print("Epoch ", epoch, file=mem_file, flush=True)
+    #print("", file=mem_file, flush=True)
     nb_tensors = 0
     nb_par = 0
     for obj in gc.get_objects():
@@ -106,16 +113,17 @@ for epoch in range(args.epoch):
                     nb_par +=1
                 else:
                     nb_tensors +=1
-                print(type(obj), obj.size(), file=mem_file, flush=True)
+                #print(type(obj), obj.size(), file=mem_file, flush=True)
         except:
             pass
     print("nb_tensors ", nb_tensors)
     print("nb_par ", nb_par)
-    nbb = 0
+    #nbb = 0
     for batch in loader:
+        torch.cuda.empty_cache()
         #if nbb > 5:
         #    break
-        nbb += 1
+        #nbb += 1
         #print("batch ")
         #print(batch)
         total_step += 1
@@ -151,12 +159,18 @@ for epoch in range(args.epoch):
 
             print("[%d] Unsup_KL: %.2f, %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, U_kld_y: %.2f" \
                 % (total_step, u_meters[0], u_meters[1], u_meters[2], u_meters[3], u_meters[4], u_meters[5]))
-            print()
+
+            #print("Memory usage ", nvgpu.gpu_info(), file=mem_file)
             sys.stdout.flush()
             meters *= 0
+            prop_meters *= 0
+            u_meters *= 0
 
         if total_step % args.save_iter == 0:
-            torch.save(model.state_dict(), args.save_dir + "/model.iter-" + str(total_step))
+            state = {'epoch': epoch, 'total_step': total_step, 'state_dict': model.state_dict(), \
+                'optimizer': optimizer.state_dict()}
+            torch.save(state,  args.save_dir + "/model.iter-" + str(total_step))
+            #torch.save(model.state_dict(), args.save_dir + "/model.iter-" + str(total_step))
 
         if total_step % args.anneal_iter == 0:
             scheduler.step()

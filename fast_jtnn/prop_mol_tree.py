@@ -45,6 +45,7 @@ class PropMolTree(object):
         for node in self.nodes:
             node.assemble()
 
+
 def dfs(node, fa_idx):
     max_depth = 0
     for child in node.neighbors:

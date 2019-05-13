@@ -86,4 +86,4 @@ def build_vocab(dataset_name):
             for x in cset:
                 print(x, file=f)
 
-build_vocab("zinc310k")
+#build_vocab("zinc310k")

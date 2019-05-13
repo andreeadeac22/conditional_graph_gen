@@ -39,7 +39,14 @@ class JTMPN(nn.Module):
         self.W_h = nn.Linear(hidden_size, hidden_size, bias=False)
         self.W_o = nn.Linear(ATOM_FDIM + hidden_size, hidden_size)
 
+
     def forward(self, fatoms, fbonds, agraph, bgraph, scope, tree_message): #tree_message[0] == vec(0)
+        #print("fatoms ", fatoms.shape)
+        #print("fbond ", fbonds.shape)
+        #print("agraph ", agraph.shape)
+        #print("bgraph ", bgraph.shape)
+        #print("scope ", len(scope))
+        #print("tree_message ", tree_message.shape)
         fatoms = create_var(fatoms)
         fbonds = create_var(fbonds)
         agraph = create_var(agraph)
@@ -61,13 +68,30 @@ class JTMPN(nn.Module):
         ainput = torch.cat([fatoms, nei_message], dim=1)
         atom_hiddens = F.relu(self.W_o(ainput))
 
+        #index_select retrieves the same thing maaany times
+        #because you can see how many times each index is repeated
+        #then the torch.bmm after it actually performs the computation of the result
+        #so i'm thinking if we could somehow hack the jtmpn function
+        #make a custom one, where we'd also pass h_G
+        #and it'd compute scores for that G on the fly
+        #without having to copy h_G a bajillion times
+        #your batches are tiny (8—16 things)
+        #so even a for loop over them for this cause could be OK
+
+        # create a list of mol_vecs, with one element containing only the candidate vecs for one molecule
+        # do a for loop over this list, multiply with the relevant h_G
+        # stack the list back into one tensor (this is now fine since you only have one scalar per candidate, so OK memory wise)
+
+
         mol_vecs = []
         for st,le in scope:
             mol_vec = atom_hiddens.narrow(0, st, le).sum(dim=0) / le
             mol_vecs.append(mol_vec)
 
         mol_vecs = torch.stack(mol_vecs, dim=0)
+        #print("mol_vecs ", mol_vecs)
         return mol_vecs
+        
 
     @staticmethod
     def tensorize(cand_batch, mess_dict):
