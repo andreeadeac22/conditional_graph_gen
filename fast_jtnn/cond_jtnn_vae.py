@@ -19,7 +19,7 @@ from .constants import *
 
 class CondJTNNVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor, u_kld_factor):
+    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor_true, infomax_factor_false, u_kld_y_factor, ymse_factor):
         super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = hidden_size
@@ -52,8 +52,10 @@ class CondJTNNVAE(nn.Module):
         self.mu_prior = torch_mu_prior
         self.cov_prior = torch_cov_prior
 
-        self.infomax_factor = infomax_factor
-        self.u_kld_factor = u_kld_factor
+        self.infomax_factor_true = infomax_factor_true
+        self.infomax_factor_false = infomax_factor_false
+        self.ymse_factor = ymse_factor
+        self.u_kld_y_factor = u_kld_y_factor
 
 
     def encode(self, jtenc_holder, mpn_holder, props):
@@ -131,7 +133,7 @@ class CondJTNNVAE(nn.Module):
             print("y_U_mu ", y_U_mu)
             print("y_U_lsgms ", y_U_lsgms)
         """
-        u_loss = u_kld_y/self.u_kld_factor + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+        u_loss = u_kld_y/self.u_kld_y_factor + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
         #print("u_loss ", u_loss)
 
         objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
@@ -156,10 +158,10 @@ class CondJTNNVAE(nn.Module):
         zero_lbl = torch.zeros(disc_false.shape[0], device= cuda_device)
         d_fake_loss = self.infomax_loss(disc_false, zero_lbl)
 
-        return prop_loss + u_loss + objYpred_MSE + self.infomax_factor/2*(d_true_loss+d_fake_loss), \
+        return prop_loss + u_loss + objYpred_MSE/self.ymse_factor + self.infomax_factor_true*d_true_loss+ self.infomax_factor_false*d_fake_loss, \
             prop_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
             u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
-            objYpred_MSE, self.infomax_factor/2*d_true_loss, self.infomax_factor/2*d_fake_loss
+            objYpred_MSE, self.infomax_factor_true*d_true_loss, self.infomax_factor_false*d_fake_loss
 
 
     def sampling_unconditional(self, prob_decode=False):
@@ -193,9 +195,10 @@ class CondJTNNVAE(nn.Module):
             tst[id2]=ytarget
             return np.asarray([tst])
 
-        sample_z=np.random.randn(1, self.dim_z)
+        z_tree = torch.randn(1, self.latent_size)
+        z_mol = torch.randn(1, self.latent_size)
         sample_y=random_cond_normal(yid, ytarget)
-        sample_smiles=self.beam_search(sample_z, sample_y, k=5)
+        sample_smiles=self.decode(z_tree, z_mol, prob_decode, sample_y)
         return sample_smiles
 
 

@@ -1,8 +1,8 @@
 import torch
 ntrn=300000
 ntst=10000
-frac_val=0.05
-frac=0.5
+frac_val=0.05 #validation proportion out of the training set
+frac=0.5 # labeled out of total (for training/validation)
 
 data_uri='../data/'
 
