@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import pickle
+import numpy
 
 import math, random, sys
 import argparse
@@ -30,7 +31,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     #parser.add_argument('--nsample', type=int, required=True)
-    parser.add_argument('--test', required=True)
+    parser.add_argument('--testX', required=True) # ../data/zinc310k/test
+    parser.add_argument('--testY', required=True) # ../data/zinc310k
     parser.add_argument('--vocab', required=True)
     parser.add_argument('--model', required=True)
 
@@ -65,21 +67,30 @@ if __name__ == "__main__":
     vocab = [x.strip("\r\n ") for x in open(args.vocab)]
     vocab = Vocab(vocab)
 
-    f = open(args.test + "test.pickle", "rb")
+    tstY = torch.tensor(pickle.load(open(args.testY + "processed-testY.pkl", "rb")))
+
+    """
+    f = open(args.testX + "processed-test.pkl", "rb")
     data = pickle.load(f)
     tstX = list(data['tstX'])
     tstY = list(data['tstY'])
+
+    with open(args.testX + "processed-testX.pkl", "wb") as g:
+        pickle.dump(tstX, g)
+
+    with open(args.testY + "processed-testY.pkl", "wb") as h:
+        pickle.dump(tstY, h)
     print("tstX ", tstX[0])
+    """
 
+    """
     tstX = [tensorize(smile) for smile in tstX]
-
     testdict = {}
     testdict['tstX'] = tstX
     testdict['tstY'] = tstY
     with open(args.test + "processed-test.pkl", "wb") as g:
         pickle.dump(testdict, g)
-
-    print("tstX ", tstX[0])
+    """
 
     model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
 
@@ -89,17 +100,40 @@ if __name__ == "__main__":
     if torch.cuda.is_available():
         model = model.cuda()
 
+    loader = MolTreeFolder(args.testX, vocab, args.batch_size, num_workers=4)
+
     # model testing
     print('::: model testing')
 
     # property prediction performance
     print('::: property prediction performance')
-    tstX =  torch.tensor(tstX, dtype=torch.float32, device=cuda_device)
-    predi_y_L_mu, predi_y_L_lsgms = model.predi(tstX)
-    tstY_hat = scaler_Y.inverse_transform(predi_y_L_mu.cpu().detach().numpy())
+    #tstX =  torch.tensor(tstX, dtype=torch.float32, device=cuda_device)
+    #tstY_hat = []
+    prediY = []
+    #it = iter(loader)
+    nb = 0
+    for batch in loader:
+        #if nb > 3:
+        #    break
+
+        x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder = batch
+        predi_y_L_mu, predi_y_L_lsgms = model.predi(*x_jtenc_holder)
+        #tstY_hat_val = scaler_Y.inverse_transform(predi_y_L_mu.cpu().detach().numpy())
+        #print("tstY_hat_val ", tstY_hat_val)
+        #print("prediY", predi_y_L_mu)
+        #tstY_hat += [tstY_hat_val]
+        prediY += [predi_y_L_mu]
+
+        nb +=1
+
+    prediY = torch.cat(prediY)
+    print(prediY.shape)
+    prediY = prediY.detach().numpy()
+
+    dim_y = 3
     with open("prop_pred.txt", "w") as e:
         for j in range(dim_y):
-            print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])], file=e)
+            print([j, mean_absolute_error(tstY[:64,j], prediY[:,j])], file=e)
 
     ## unconditional generation
     print('::: unconditional generation')
@@ -112,8 +146,8 @@ if __name__ == "__main__":
     print('::: conditional generation (e.g. MolWt=250)')
     yid = 0
     ytarget = 250.
-    ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
+    #ytarget_transform = (ytarget-scaler_Y.mean_[yid])/np.sqrt(scaler_Y.var_[yid])
     with open("cond_gen_molwt250.txt", "w") as g:
         for t in range(10):
-            smi = model.sampling_conditional(yid, ytarget_transform)
+            smi = model.sampling_conditional(yid, ytarget)
             print([t, smi, get_property(smi)], file=g)

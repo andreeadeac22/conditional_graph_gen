@@ -165,16 +165,16 @@ class CondJTNNVAE(nn.Module):
 
 
     def sampling_unconditional(self, prob_decode=False):
-        z_tree = torch.randn(1, self.latent_size)
+        z_tree = torch.randn(1, self.latent_size, device= cuda_device)
         z_mol = torch.randn(1, self.latent_size)
-        if torch.cuda.is_available():
-            z_tree = z_tree.cuda()
-            z_mol = z_mol.cuda()
-        sample_y=np.random.multivariate_normal(self.mu_prior.cpu(), self.cov_prior.cpu(), 1)
+        #if torch.cuda.is_available():
+        #    z_tree = z_tree.cuda()
+        #    z_mol = z_mol.cuda()
+        sample_y = torch.tensor(np.random.multivariate_normal(self.mu_prior.cpu(), self.cov_prior.cpu(), 1), dtype=torch.float32, device = cuda_device)
         return self.decode(z_tree, z_mol, prob_decode, sample_y)
 
 
-    def sampling_conditional(self, yid, ytarget):
+    def sampling_conditional(self, yid, ytarget, prob_decode=False):
         def random_cond_normal(yid, ytarget):
             id2=[yid]
             id1=np.setdiff1d([0,1,2],id2)
@@ -195,10 +195,10 @@ class CondJTNNVAE(nn.Module):
             tst[id2]=ytarget
             return np.asarray([tst])
 
-        z_tree = torch.randn(1, self.latent_size)
-        z_mol = torch.randn(1, self.latent_size)
-        sample_y=random_cond_normal(yid, ytarget)
-        sample_smiles=self.decode(z_tree, z_mol, prob_decode, sample_y)
+        z_tree = torch.randn(1, self.latent_size, device=cuda_device)
+        z_mol = torch.randn(1, self.latent_size, device = cuda_device)
+        sample_y =  torch.tensor(random_cond_normal(yid, ytarget), dtype=torch.float32, device = cuda_device)
+        sample_smiles =  self.decode(z_tree, z_mol, prob_decode, sample_y)
         return sample_smiles
 
 
@@ -262,7 +262,8 @@ class CondJTNNVAE(nn.Module):
         #currently do not support batch decoding
         assert x_tree_vecs.size(0) == 1 and x_mol_vecs.size(0) == 1
 
-        pred_root, pred_nodes = self.decoder.decode(x_tree_vecs, prob_decode, props)
+        cat_tree_vecs = torch.cat((x_tree_vecs, props), dim=1)
+        pred_root, pred_nodes = self.decoder.decode(cat_tree_vecs, prob_decode)
         if len(pred_nodes) == 0: return None
         elif len(pred_nodes) == 1: return pred_root.smiles
 
