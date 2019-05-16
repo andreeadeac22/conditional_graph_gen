@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import rdkit
+from sklearn.preprocessing import StandardScaler
 
 from fast_jtnn import *
 from fast_molvae_constants import *
@@ -36,8 +37,12 @@ def split_data(dataset_name):
     valY_L=Y[perm_id[nL_trn:nL_trn+nL_val]]
 
     trnX_U=X[perm_id[nL_trn+nL_val:nL_trn+nL_val+nU_trn]]
-
     valX_U=X[perm_id[nL_trn+nL_val+nU_trn:]]
+
+    scaler_Y = StandardScaler()
+    scaler_Y.fit(Y)
+    trnY_L=scaler_Y.transform(trnY_L)
+    valY_L=scaler_Y.transform(valY_L)
 
     trndict['trnX_L'] = trnX_L
     trndict['trnY_L'] = trnY_L
@@ -50,18 +55,33 @@ def split_data(dataset_name):
     testdict['tstX'] = tstX
     testdict['tstY'] = tstY
 
-    with open(data_uri +  dataset_name + "/" + 'train.pickle', 'wb') as f:
+    with open(data_uri +  dataset_name + "/frac" + str(frac) + "/" + "stat_file.txt", "w") as stat_file:
+        print("Fraction of labeled samples in training and validation sets (frac): ", frac, file=stat_file)
+        print("Fraction of validation samples from whole non-test set (300k) (frac_val): ", frac_val, file=stat_file)
+        print("trnX_L ", trnX_L.shape, file=stat_file)
+        print("trnY_L ", trnY_L.shape, file=stat_file)
+        print("trnX_U ", trnX_U.shape, file=stat_file)
+
+        print("valX_L ", valX_L.shape, file=stat_file)
+        print("valY_L ", valY_L.shape, file=stat_file)
+        print("valX_U ", valX_U.shape, file=stat_file)
+
+        print("tstX ", tstX.shape, file=stat_file)
+        print("tstY ", tstY.shape, file=stat_file)
+
+
+    with open(data_uri +  dataset_name + "/frac" + str(frac) + "/" + 'train.pickle', 'wb') as f:
         pickle.dump(trndict, f)
-    with open(data_uri + dataset_name +  "/" + 'valid.pickle', 'wb') as f:
+    with open(data_uri + dataset_name + "/frac" + str(frac) +  "/" + 'valid.pickle', 'wb') as f:
         pickle.dump(valdict, f)
-    with open(data_uri + dataset_name +  "/" + 'test.pickle', 'wb') as f:
+    with open(data_uri + dataset_name + "/frac" + str(frac) +  "/" + 'test.pickle', 'wb') as f:
         pickle.dump(testdict, f)
 
 def build_vocab(dataset_name):
         import sys
         cset = set()
 
-        path = data_uri + dataset_name + "/"
+        path = data_uri + dataset_name + "/frac" + str(frac) + "/"
         with open(path + "train.pickle", "rb") as f:
             data = pickle.load(f)
 
@@ -82,8 +102,9 @@ def build_vocab(dataset_name):
             for c in mol.nodes:
                 cset.add(c.smiles)
 
-        with open(data_uri + dataset_name + "/" + "vocab.txt", "w") as f:
+        with open(data_uri + dataset_name + "/frac" + str(frac) + "/" + "vocab.txt", "w") as f:
             for x in cset:
                 print(x, file=f)
 
-#build_vocab("zinc310k")
+build_vocab("zinc310k")
+#split_data("zinc310k")

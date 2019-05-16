@@ -90,6 +90,9 @@ def run():
     batch_size_U=int(batch_size*len(trnX_U)/(len(trnX_L)+len(trnX_U)))
     n_batch=int(len(trnX_L)/batch_size_L)
 
+    print("batch_size_L ", batch_size_L)
+    print("batch_size_U ", batch_size_U)
+
     batch_size_val_L=int(len(valX_L)/10)
     batch_size_val_U=int(len(valX_U)/10)
 

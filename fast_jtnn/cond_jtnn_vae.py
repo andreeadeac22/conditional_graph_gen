@@ -166,7 +166,7 @@ class CondJTNNVAE(nn.Module):
 
     def sampling_unconditional(self, prob_decode=False):
         z_tree = torch.randn(1, self.latent_size, device= cuda_device)
-        z_mol = torch.randn(1, self.latent_size)
+        z_mol = torch.randn(1, self.latent_size, device= cuda_device)
         #if torch.cuda.is_available():
         #    z_tree = z_tree.cuda()
         #    z_mol = z_mol.cuda()
@@ -262,8 +262,10 @@ class CondJTNNVAE(nn.Module):
         #currently do not support batch decoding
         assert x_tree_vecs.size(0) == 1 and x_mol_vecs.size(0) == 1
 
-        cat_tree_vecs = torch.cat((x_tree_vecs, props), dim=1)
-        pred_root, pred_nodes = self.decoder.decode(cat_tree_vecs, prob_decode)
+        x_tree_vecs = torch.cat((x_tree_vecs, props), dim=1)
+        x_mol_vecs = torch.cat((x_mol_vecs, props), dim=1)
+
+        pred_root, pred_nodes = self.decoder.decode(x_tree_vecs, prob_decode)
         if len(pred_nodes) == 0: return None
         elif len(pred_nodes) == 1: return pred_root.smiles
 

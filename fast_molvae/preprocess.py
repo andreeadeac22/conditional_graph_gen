@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-t", "--train", dest="train_path")
     parser.add_option("-n", "--split", dest="nsplits", default=10)
-    parser.add_option("-j", "--jobs", dest="njobs", default=8)
+    parser.add_option("-j", "--jobs", dest="njobs", default=5)
     parser.add_option("--dataset", dest="dataset_name", default="zinc310k")
 
     opts,args = parser.parse_args()
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     if opts.dataset_name == "zinc310k":
         print("Dataset is ", opts.dataset_name)
 
-        path = data_uri + opts.dataset_name + "/"
+        path = data_uri + opts.dataset_name + "/frac" + str(frac) + "/"
         with open(path + "train.pickle", "rb") as f:
             data = pickle.load(f)
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         for split_id in range(num_splits):
             st = split_id * le
             sub_data = all_data_prop[st:st + le]
-            with open(opts.dataset_name + '-processed/prop-tensors-%d.pkl' % split_id, 'wb') as f:
+            with open(opts.dataset_name +  "-processed/frac" + str(frac) + "/" + 'prop-tensors-%d.pkl' % split_id, 'wb') as f:
                 pickle.dump(sub_data, f)
 
         le = int((len(all_data_u) + num_splits - 1) / num_splits)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         for split_id in range(num_splits):
             st = split_id * le
             sub_data = all_data_u[st:st + le]
-            with open(opts.dataset_name + '-processed/u-tensors-%d.pkl' % split_id, 'wb') as f:
+            with open(opts.dataset_name + '-processed/frac' + str(frac) + "/" + 'u-tensors-%d.pkl' % split_id, 'wb') as f:
                 pickle.dump(sub_data, f)
 
 

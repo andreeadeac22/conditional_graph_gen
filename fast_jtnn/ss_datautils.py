@@ -10,43 +10,7 @@ from .mpn import MPN
 from .jtmpn import JTMPN
 
 
-class PairTreeFolder(object):
-
-    def __init__(self, data_folder, vocab, batch_size, num_workers=4, shuffle=True, y_assm=True, replicate=None):
-        self.data_folder = data_folder
-        self.data_files = [fn for fn in os.listdir(data_folder)]
-        self.batch_size = batch_size
-        self.vocab = vocab
-        self.num_workers = num_workers
-        self.y_assm = y_assm
-        self.shuffle = shuffle
-
-        if replicate is not None: #expand is int
-            self.data_files = self.data_files * replicate
-
-    def __iter__(self):
-        for fn in self.data_files:
-            fn = os.path.join(self.data_folder, fn)
-            with open(fn) as f:
-                data = pickle.load(f)
-
-            if self.shuffle:
-                random.shuffle(data) #shuffle data before batch
-
-            batches = [data[i : i + self.batch_size] for i in range(0, len(data), self.batch_size)]
-            if len(batches[-1]) < self.batch_size:
-                batches.pop()
-
-            dataset = PairTreeDataset(batches, self.vocab, self.y_assm)
-            dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.num_workers, collate_fn=lambda x:x[0])
-
-            for b in dataloader:
-                yield b
-
-            del data, batches, dataset, dataloader
-
 class SSMolTreeFolder(object):
-
     def __init__(self, data_folder, vocab, batch_size, num_workers=4, shuffle=True, assm=True, replicate=None):
         self.data_folder = data_folder
         self.data_files = [fn for fn in os.listdir(data_folder)]
@@ -104,20 +68,6 @@ class SSMolTreeFolder(object):
                         print("Error!")
 
 
-class PairTreeDataset(Dataset):
-
-    def __init__(self, data, vocab, y_assm):
-        self.data = data
-        self.vocab = vocab
-        self.y_assm = y_assm
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        batch0, batch1 = zip(*self.data[idx])
-        return tensorize(batch0, self.vocab, assm=False), tensorize(batch1, self.vocab, assm=self.y_assm)
-
 class SSMolTreeDataset(Dataset):
 
     def __init__(self, data, vocab, assm=True):
@@ -130,6 +80,7 @@ class SSMolTreeDataset(Dataset):
 
     def __getitem__(self, idx):
         return tensorize(self.data[idx], self.vocab, assm=self.assm)
+
 
 def tensorize(pair_batch, vocab, assm=True):
     tree_batch, prop_tree_batch = pair_batch
@@ -180,6 +131,7 @@ def tensorize(pair_batch, vocab, assm=True):
 
     return tree_batch, jtenc_holder, mpn_holder, (jtmpn_holder,batch_idx), \
         prop_tree_batch, prop_jtenc_holder, prop_mpn_holder, (prop_jtmpn_holder, prop_batch_idx), props
+
 
 def set_batch_nodeID(mol_batch, vocab):
     tot = 0

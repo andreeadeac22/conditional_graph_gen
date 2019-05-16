@@ -51,6 +51,8 @@ parser.add_argument('--infomax_false', type=int, default=1)
 parser.add_argument('--u_kld_y', type=int, default=1)
 parser.add_argument('--ymse_factor', type=int, default=1)
 
+parser.add_argument('--ssfrac', type=float, defaut=0.5)
+
 args = parser.parse_args()
 print(args)
 
