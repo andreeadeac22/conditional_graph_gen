@@ -56,6 +56,8 @@ if __name__ == "__main__":
     opts,args = parser.parse_args()
     opts.njobs = int(opts.njobs)
 
+    print("Frac is ", frac)
+
     print("Before Pool")
     pool = Pool(opts.njobs)
     num_splits = int(opts.nsplits)

@@ -5,7 +5,6 @@ import rdkit
 from sklearn.preprocessing import StandardScaler
 
 from fast_jtnn import *
-from fast_molvae_constants import *
 
 def split_data(dataset_name):
     file_name = data_uri + dataset_name +  "/" + 'ZINC_310k.csv'
@@ -22,12 +21,6 @@ def split_data(dataset_name):
     X=X[:ntrn]
     Y=Y[:ntrn]
 
-    nL=int(len(Y)*frac)
-    nU=len(Y)-nL
-    nL_trn=int(nL*(1-frac_val))
-    nL_val=nL-nL_trn
-    nU_trn=int(nU*(1-frac_val))
-    nU_val=nU-nU_trn
     perm_id=np.random.permutation(len(Y))
 
     trnX_L=X[perm_id[:nL_trn]]
@@ -55,7 +48,9 @@ def split_data(dataset_name):
     testdict['tstX'] = tstX
     testdict['tstY'] = tstY
 
-    with open(data_uri +  dataset_name + "/frac" + str(frac) + "/" + "stat_file.txt", "w") as stat_file:
+    path = data_uri +  dataset_name + "/frac" + str(frac) + "/"
+
+    with open(path + "stat_file.txt", "w") as stat_file:
         print("Fraction of labeled samples in training and validation sets (frac): ", frac, file=stat_file)
         print("Fraction of validation samples from whole non-test set (300k) (frac_val): ", frac_val, file=stat_file)
         print("trnX_L ", trnX_L.shape, file=stat_file)
@@ -70,11 +65,11 @@ def split_data(dataset_name):
         print("tstY ", tstY.shape, file=stat_file)
 
 
-    with open(data_uri +  dataset_name + "/frac" + str(frac) + "/" + 'train.pickle', 'wb') as f:
+    with open(path + 'train.pickle', 'wb') as f:
         pickle.dump(trndict, f)
-    with open(data_uri + dataset_name + "/frac" + str(frac) +  "/" + 'valid.pickle', 'wb') as f:
+    with open(path + 'valid.pickle', 'wb') as f:
         pickle.dump(valdict, f)
-    with open(data_uri + dataset_name + "/frac" + str(frac) +  "/" + 'test.pickle', 'wb') as f:
+    with open(path + 'test.pickle', 'wb') as f:
         pickle.dump(testdict, f)
 
 def build_vocab(dataset_name):
@@ -102,9 +97,9 @@ def build_vocab(dataset_name):
             for c in mol.nodes:
                 cset.add(c.smiles)
 
-        with open(data_uri + dataset_name + "/frac" + str(frac) + "/" + "vocab.txt", "w") as f:
+        with open(path + "vocab.txt", "w") as f:
             for x in cset:
                 print(x, file=f)
 
-build_vocab("zinc310k")
+#build_vocab("zinc310k")
 #split_data("zinc310k")

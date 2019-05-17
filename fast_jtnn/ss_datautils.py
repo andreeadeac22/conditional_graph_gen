@@ -11,7 +11,7 @@ from .jtmpn import JTMPN
 
 
 class SSMolTreeFolder(object):
-    def __init__(self, data_folder, vocab, batch_size, num_workers=4, shuffle=True, assm=True, replicate=None):
+    def __init__(self, data_folder, vocab, batch_size_L, batch_size_U, num_workers=4, shuffle=True, assm=True, replicate=None):
         self.data_folder = data_folder
         self.data_files = [fn for fn in os.listdir(data_folder)]
 
@@ -24,11 +24,13 @@ class SSMolTreeFolder(object):
         print("prop ", self.data_files_prop)
         print("u ", self.data_files_u)
 
-        self.batch_size = batch_size
+        #self.batch_size = batch_size
         self.vocab = vocab
         self.num_workers = num_workers
         self.shuffle = shuffle
         self.assm = assm
+        self.batch_size_L = batch_size_L
+        self.batch_size_U = batch_size_U
 
         if replicate is not None: #expand is int
             self.data_files = self.data_files * replicate
@@ -52,9 +54,13 @@ class SSMolTreeFolder(object):
                             data_prop = [data_prop[j] for j in idx]
                             data_u = [data_u[j] for j in idx]
                             #random.shuffle(data_prop) #shuffle data before batch
+                        j= 0
+                        batches = []
+                        for i in range(0, len(data_u), self.batch_size_U):
+                            batches += [(data_u[i : i + self.batch_size_U], data_prop[j : j + self.batch_size_L])]
+                            j += batch_size_L
 
-                        batches = [(data_u[i : i + self.batch_size], data_prop[i : i + self.batch_size])  for i in range(0, len(data_prop), self.batch_size)]
-                        if len(batches[-1]) < self.batch_size:
+                        if len(batches[-1]) < self.batch_size_U:
                             batches.pop()
 
                         dataset = SSMolTreeDataset(batches, self.vocab, self.assm)

@@ -51,16 +51,21 @@ parser.add_argument('--infomax_false', type=int, default=1)
 parser.add_argument('--u_kld_y', type=int, default=1)
 parser.add_argument('--ymse_factor', type=int, default=1)
 
-parser.add_argument('--ssfrac', type=float, defaut=0.5)
-
 args = parser.parse_args()
 print(args)
+
+batch_size_L=int(batch_size* nL_trn / (nL_trn+nU_trn))
+batch_size_U=int(batch_size* nU_trn / (nL_trn+nU_trn))
+
+print("batch_size_L ", batch_size_L)
+print("batch_size_U ", batch_size_U)
 
 vocab = [x.strip("\r\n ") for x in open(args.vocab)]
 vocab = Vocab(vocab)
 
 if args.train == "zinc310k-processed":
-    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
+    model = CondJTNNVAE(vocab, args, batch_size_L, batch_size_U)
+    #model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
 else:
     model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG)
 if torch.cuda.is_available():
@@ -99,7 +104,7 @@ u_meters = np.zeros(6)
 mem_file = open(args.save_dir + "track_mem.txt", "w")
 
 if args.train == "zinc310k-processed":
-    loader = SSMolTreeFolder(args.train, vocab, args.batch_size, num_workers=4) #make siamese dataloader
+    loader = SSMolTreeFolder(args.train, vocab, batch_size_L, batch_size_U, num_workers=4) #make siamese dataloader
 else:
     loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
 
@@ -163,6 +168,7 @@ for epoch in range(st_epoch, args.epoch):
 
             print("[%d] Unsup_KL: %.2f, %.2f, Word: %.2f, Topo: %.2f, Assm: %.2f, U_kld_y: %.2f" \
                 % (total_step, u_meters[0], u_meters[1], u_meters[2], u_meters[3], u_meters[4], u_meters[5]))
+            print()
 
             #print("Memory usage ", nvgpu.gpu_info(), file=mem_file)
             sys.stdout.flush()

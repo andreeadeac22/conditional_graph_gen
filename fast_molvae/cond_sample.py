@@ -171,7 +171,7 @@ if __name__ == "__main__":
     with open(args.save_dir + "uncond_gen.txt", "w") as f:
         for t in range(10):
             smi = model.sampling_unconditional()
-            print([t, smi, operty(smi)], file=f)
+            print([t, smi, get_property(smi)], file=f)
 
     ## conditional generation (e.g. MolWt=250)
     print('::: conditional generation (e.g. MolWt=250)')

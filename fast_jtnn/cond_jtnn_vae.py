@@ -19,35 +19,38 @@ from .constants import *
 
 class CondJTNNVAE(nn.Module):
 
-    def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, infomax_factor_true, infomax_factor_false, u_kld_y_factor, ymse_factor):
+    #def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, \
+    #        infomax_factor_true, infomax_factor_false, u_kld_y_factor, ymse_factor):
+
+    def __init__(self, vocab, args, batch_size_L, batch_size_U):
         super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
-        self.hidden_size = hidden_size
-        self.latent_size = latent_size = int(latent_size / 2) #Tree and Mol have two vectors
+        self.hidden_size = args.hidden_size
+        self.latent_size = int(args.latent_size / 2) #Tree and Mol have two vectors
 
-        self.predi = JTNNPredi(hidden_size, prop_hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
-        self.jtnn = JTNNEncoder(hidden_size, depthT, nn.Embedding(vocab.size(), hidden_size))
-        self.decoder = CondJTNNDecoder(vocab, hidden_size, prop_hidden_size, latent_size, nn.Embedding(vocab.size(), hidden_size))
+        self.predi = JTNNPredi(self.hidden_size, args.prop_hidden_size, args.depthT, nn.Embedding(vocab.size(), self.hidden_size))
+        self.jtnn = JTNNEncoder(self.hidden_size, args.depthT, nn.Embedding(vocab.size(), self.hidden_size))
+        self.decoder = CondJTNNDecoder(vocab, self.hidden_size, args.prop_hidden_size, self.latent_size, nn.Embedding(vocab.size(), self.hidden_size))
 
-        self.prop_dense = nn.Linear(num_prop, prop_hidden_size)
+        self.prop_dense = nn.Linear(num_prop, args.prop_hidden_size)
         self.relu = nn.ReLU()
 
-        self.tree_enc_dense = nn.Linear(hidden_size + prop_hidden_size, hidden_size)
-        self.mol_enc_dense = nn.Linear(hidden_size + prop_hidden_size, hidden_size)
+        self.tree_enc_dense = nn.Linear(self.hidden_size + args.prop_hidden_size, self.hidden_size)
+        self.mol_enc_dense = nn.Linear(self.hidden_size + args.prop_hidden_size, self.hidden_size)
 
-        self.jtmpn = JTMPN(hidden_size, depthG)
-        self.mpn = MPN(hidden_size, depthG)
+        self.jtmpn = JTMPN(self.hidden_size, args.depthG)
+        self.mpn = MPN(self.hidden_size, args.depthG)
 
-        self.A_assm = nn.Linear(latent_size + prop_hidden_size, hidden_size, bias=False)
+        self.A_assm = nn.Linear(self.latent_size + args.prop_hidden_size, self.hidden_size, bias=False)
         self.assm_loss = nn.CrossEntropyLoss(size_average=False)
 
-        self.T_mean = nn.Linear(hidden_size, latent_size)
-        self.T_var = nn.Linear(hidden_size, latent_size)
-        self.G_mean = nn.Linear(hidden_size, latent_size)
-        self.G_var = nn.Linear(hidden_size, latent_size)
+        self.T_mean = nn.Linear(self.hidden_size, self.latent_size)
+        self.T_var = nn.Linear(self.hidden_size, self.latent_size)
+        self.G_mean = nn.Linear(self.hidden_size, self.latent_size)
+        self.G_var = nn.Linear(self.hidden_size, self.latent_size)
 
         self.infomax_loss = nn.BCEWithLogitsLoss()
-        self.discriminator = nn.Linear(prop_hidden_size + latent_size, 1)
+        self.discriminator = nn.Linear(args.prop_hidden_size + self.latent_size, 1)
 
         self.mu_prior = torch_mu_prior
         self.cov_prior = torch_cov_prior
@@ -56,6 +59,9 @@ class CondJTNNVAE(nn.Module):
         self.infomax_factor_false = infomax_factor_false
         self.ymse_factor = ymse_factor
         self.u_kld_y_factor = u_kld_y_factor
+
+        self.batch_size_L = batch_size_L
+        self.batch_size_U = batch_size_U
 
 
     def encode(self, jtenc_holder, mpn_holder, props):
@@ -127,12 +133,7 @@ class CondJTNNVAE(nn.Module):
 
         u_kl_div = tree_kl + mol_kl
         u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms))
-        """
-        print("u_kld_y ", u_kld_y)
-        if(u_kld_y > 10000):
-            print("y_U_mu ", y_U_mu)
-            print("y_U_lsgms ", y_U_lsgms)
-        """
+
         u_loss = u_kld_y/self.u_kld_y_factor + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
         #print("u_loss ", u_loss)
 
@@ -158,10 +159,18 @@ class CondJTNNVAE(nn.Module):
         zero_lbl = torch.zeros(disc_false.shape[0], device= cuda_device)
         d_fake_loss = self.infomax_loss(disc_false, zero_lbl)
 
-        return prop_loss + u_loss + objYpred_MSE/self.ymse_factor + self.infomax_factor_true*d_true_loss+ self.infomax_factor_false*d_fake_loss, \
+        prop_loss = prop_loss * self.batch_size_L / (self.batch_size_L + self.batch_size_U)
+        u_loss = u_loss * self.batch_size_U / (self.batch_size_L + self.batch_size_U)
+        objYpred_MSE = objYpred_MSE * self.ymse_factor * self.batch_size_L / (self.batch_size_L + self.batch_size_U)
+        d_true_loss = self.infomax_factor_true * d_true_loss
+        d_fake_loss = self.infomax_factor_false * d_fake_loss
+
+        loss = prop_loss + u_loss + objYpred_MSE + d_true_loss + d_fake_loss
+
+        return loss, \
             prop_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
             u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
-            objYpred_MSE, self.infomax_factor_true*d_true_loss, self.infomax_factor_false*d_fake_loss
+            objYpred_MSE, d_true_loss, d_fake_loss
 
 
     def sampling_unconditional(self, prob_decode=False):
