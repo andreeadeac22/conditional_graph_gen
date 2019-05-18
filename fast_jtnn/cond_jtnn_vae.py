@@ -18,11 +18,7 @@ from .constants import *
 
 
 class CondJTNNVAE(nn.Module):
-
-    #def __init__(self, vocab, hidden_size, prop_hidden_size, latent_size, depthT, depthG, \
-    #        infomax_factor_true, infomax_factor_false, u_kld_y_factor, ymse_factor):
-
-    def __init__(self, vocab, args, batch_size_L, batch_size_U):
+    def __init__(self, vocab, args, batch_size_L, batch_size_U, mu_prior, cov_prior):
         super(CondJTNNVAE, self).__init__()
         self.vocab = vocab
         self.hidden_size = args.hidden_size
@@ -52,13 +48,13 @@ class CondJTNNVAE(nn.Module):
         self.infomax_loss = nn.BCEWithLogitsLoss()
         self.discriminator = nn.Linear(args.prop_hidden_size + self.latent_size, 1)
 
-        self.mu_prior = torch_mu_prior
-        self.cov_prior = torch_cov_prior
+        self.mu_prior = mu_prior
+        self.cov_prior = cov_prior
 
-        self.infomax_factor_true = infomax_factor_true
-        self.infomax_factor_false = infomax_factor_false
-        self.ymse_factor = ymse_factor
-        self.u_kld_y_factor = u_kld_y_factor
+        self.infomax_factor_true = args.infomax_factor_true
+        self.infomax_factor_false = args.infomax_factor_false
+        self.ymse_factor = args.ymse_factor
+        self.u_kld_y_factor = args.u_kld_y_factor
 
         self.batch_size_L = batch_size_L
         self.batch_size_U = batch_size_U
@@ -114,7 +110,7 @@ class CondJTNNVAE(nn.Module):
 
         prop_kl_div = prop_tree_kl + prop_mol_kl
         prop_log_prior_y = torch.mean(self.noniso_logpdf(props))
-        prop_loss = prop_log_prior_y + prop_word_loss + prop_topo_loss + prop_assm_loss + beta * prop_kl_div
+        prop_loss = prop_word_loss + prop_topo_loss + prop_assm_loss + beta * prop_kl_div - prop_log_prior_y
 
         #Unlabeled
         y_U_mu, y_U_lsgms = self.predi(*x_jtenc_holder)
@@ -132,9 +128,9 @@ class CondJTNNVAE(nn.Module):
         u_assm_loss, u_assm_acc = self.assm(x_batch, x_jtmpn_holder, u_cat_z_mol, x_tree_mess)
 
         u_kl_div = tree_kl + mol_kl
-        u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms))
+        u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms)) * self.u_kld_y_factor
 
-        u_loss = u_kld_y/self.u_kld_y_factor + u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div
+        u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div + u_kld_y
         #print("u_loss ", u_loss)
 
         objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
@@ -169,8 +165,8 @@ class CondJTNNVAE(nn.Module):
 
         return loss, \
             prop_loss, prop_tree_kl.item(), prop_mol_kl.item(), prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
-            u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
-            objYpred_MSE, d_true_loss, d_fake_loss
+            u_loss, tree_kl.item(), mol_kl.item(), u_word_acc, u_topo_acc, u_assm_acc, u_kld_y, \
+                objYpred_MSE, d_true_loss, d_fake_loss
 
 
     def sampling_unconditional(self, prob_decode=False):
@@ -218,6 +214,8 @@ class CondJTNNVAE(nn.Module):
 
 
     def noniso_KLD(self, mu, log_sigma_sq):
+        print("mu ", mu)
+        print("log_sigma_sq ", log_sigma_sq)
         exp_sgm = torch.exp(log_sigma_sq) # exp_sgm.shape is (100,3)
         all_traces = []
         for i in range(exp_sgm.shape[0]):

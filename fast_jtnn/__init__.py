@@ -9,3 +9,4 @@ from .datautils import MolTreeFolder, PairTreeFolder, MolTreeDataset
 from .ss_datautils import SSMolTreeFolder
 from .prop_mol_tree import PropMolTree
 from .cond_jtnn_vae import CondJTNNVAE
+from .constants import *

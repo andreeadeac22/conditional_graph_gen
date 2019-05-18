@@ -21,13 +21,13 @@ lg.setLevel(rdkit.RDLogger.CRITICAL)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', required=True)
-parser.add_argument('--vocab', required=True)
+parser.add_argument('--data', required=True)
 parser.add_argument('--save_dir', required=True)
 parser.add_argument('--load_epoch', type=int, default=0)
 
 parser.add_argument('--hidden_size', type=int, default=450)
 parser.add_argument('--prop_hidden_size', type=int, default=3) #cond
-parser.add_argument('--batch_size', type=int, default=16)
+parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--latent_size', type=int, default=56)
 parser.add_argument('--depthT', type=int, default=20)
 parser.add_argument('--depthG', type=int, default=3)
@@ -46,25 +46,39 @@ parser.add_argument('--kl_anneal_iter', type=int, default=1000)
 parser.add_argument('--print_iter', type=int, default=50)
 parser.add_argument('--save_iter', type=int, default=5000)
 
-parser.add_argument('--infomax_true', type=int, default=1)
-parser.add_argument('--infomax_false', type=int, default=1)
-parser.add_argument('--u_kld_y', type=int, default=1)
+parser.add_argument('--infomax_factor_true', type=int, default=1)
+parser.add_argument('--infomax_factor_false', type=int, default=1)
+parser.add_argument('--u_kld_y_factor', type=float, default=1.0)
 parser.add_argument('--ymse_factor', type=int, default=1)
 
 args = parser.parse_args()
 print(args)
 
-batch_size_L=int(batch_size* nL_trn / (nL_trn+nU_trn))
-batch_size_U=int(batch_size* nU_trn / (nL_trn+nU_trn))
+batch_size_L=int(args.batch_size* nL_trn / (nL_trn+nU_trn))
+batch_size_U=int(args.batch_size* nU_trn / (nL_trn+nU_trn))
 
 print("batch_size_L ", batch_size_L)
 print("batch_size_U ", batch_size_U)
 
-vocab = [x.strip("\r\n ") for x in open(args.vocab)]
+vocab_file = args.data + "vocab.txt"
+vocab = [x.strip("\r\n ") for x in open(vocab_file)]
 vocab = Vocab(vocab)
 
-if args.train == "zinc310k-processed":
-    model = CondJTNNVAE(vocab, args, batch_size_L, batch_size_U)
+
+if "zinc310k-processed" in args.train:
+    with open(args.data + "train.pickle", "rb") as f:
+        data = pickle.load(f)
+
+    trnY_L = list(data['trnY_L'])
+    trnY_L = np.stack(trnY_L, axis=0)
+
+    mu_prior= torch.tensor(np.mean(trnY_L,0), dtype = torch.float32, device = cuda_device)
+    cov_prior= torch.tensor(np.cov(trnY_L.T), dtype = torch.float32, device = cuda_device)
+
+    print("mu_prior ", mu_prior)
+    print("cov_prior ", cov_prior)
+
+    model = CondJTNNVAE(vocab, args, batch_size_L, batch_size_U, mu_prior, cov_prior)
     #model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
 else:
     model = JTNNVAE(vocab, args.hidden_size, args.latent_size, args.depthT, args.depthG)
@@ -103,7 +117,7 @@ u_meters = np.zeros(6)
 
 mem_file = open(args.save_dir + "track_mem.txt", "w")
 
-if args.train == "zinc310k-processed":
+if "zinc310k-processed" in args.train:
     loader = SSMolTreeFolder(args.train, vocab, batch_size_L, batch_size_U, num_workers=4) #make siamese dataloader
 else:
     loader = MolTreeFolder(args.train, vocab, args.batch_size, num_workers=4)
@@ -138,9 +152,10 @@ for epoch in range(st_epoch, args.epoch):
         total_step += 1
         #try:
         model.zero_grad()
+
         loss, \
         prop_loss, prop_tree_kl, prop_mol_kl, prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
-        u_loss, tree_kl, mol_kl, u_word_acc, u_topo_acc, u_assm_acc,u_kld_y, \
+        u_loss, tree_kl, mol_kl, u_word_acc, u_topo_acc, u_assm_acc, u_kld_y, \
         objYpred_MSE, d_true_loss, d_fake_loss = model(batch, beta)
 
         loss.backward()

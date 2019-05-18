@@ -58,7 +58,7 @@ class SSMolTreeFolder(object):
                         batches = []
                         for i in range(0, len(data_u), self.batch_size_U):
                             batches += [(data_u[i : i + self.batch_size_U], data_prop[j : j + self.batch_size_L])]
-                            j += batch_size_L
+                            j += self.batch_size_L
 
                         if len(batches[-1]) < self.batch_size_U:
                             batches.pop()
