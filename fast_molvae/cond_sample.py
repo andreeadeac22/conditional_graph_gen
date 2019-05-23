@@ -120,10 +120,13 @@ if __name__ == "__main__":
         pickle.dump(testdict, g)
     """
 
-    model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
+    model = CondJTNNVAE(vocab, args, batch_size_L, batch_size_U, mu_prior, cov_prior)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    state = torch.load(args.model) # need to change
-    model.load_state_dict(state['state_dict'])
+    checkpoint = torch.load(args.model)
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+
 
     if torch.cuda.is_available():
         model = model.cuda()

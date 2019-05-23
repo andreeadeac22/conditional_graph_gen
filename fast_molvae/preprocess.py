@@ -10,7 +10,6 @@ import pandas as pd
 import numpy as np
 
 from fast_jtnn import *
-from fast_molvae_constants import *
 
 def tensorize(smiles, assm=True):
     mol_tree = MolTree(smiles)

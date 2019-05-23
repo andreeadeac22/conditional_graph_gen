@@ -20,8 +20,8 @@ lg = rdkit.RDLogger.logger()
 lg.setLevel(rdkit.RDLogger.CRITICAL)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--train', required=True)
-parser.add_argument('--data', required=True)
+parser.add_argument('--train', required=True) # --train zinc310k-processed/frac0.5/
+parser.add_argument('--data', required=True)  # --data ../data/zinc310k/frac0.5/
 parser.add_argument('--save_dir', required=True)
 parser.add_argument('--load_epoch', type=int, default=0)
 
