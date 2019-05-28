@@ -69,56 +69,34 @@ if __name__ == "__main__":
     parser.add_argument('--ymse_factor', type=int, default=1)
 
 
-    args = parser.parse_args()
+    rgs = parser.parse_args()
+    print(args)
 
-    vocab = [x.strip("\r\n ") for x in open(args.vocab)]
+    batch_size_L=int(args.batch_size* nL_trn / (nL_trn+nU_trn))
+    batch_size_U=int(args.batch_size* nU_trn / (nL_trn+nU_trn))
+
+    print("batch_size_L ", batch_size_L)
+    print("batch_size_U ", batch_size_U)
+
+    vocab_file = args.data + "vocab.txt"
+    vocab = [x.strip("\r\n ") for x in open(vocab_file)]
     vocab = Vocab(vocab)
 
-    file_name = data_uri + "zinc310k/" + 'ZINC_310k.csv'
-    X = pd.read_csv(file_name).values[:ntrn+ntst,0] #0: SMILES
-    Y = np.asarray(pd.read_csv(file_name).values[:ntrn+ntst,1:], dtype=np.float32) # 1: MolWT, 2: LogP, 3: QED
 
-    tstX=X[-ntst:]
-    tstY=Y[-ntst:]
+    with open(args.data + "train.pickle", "rb") as f:
+        data = pickle.load(f)
 
-    X=X[:ntrn]
-    Y=Y[:ntrn]
-
-    perm_id=np.random.permutation(len(Y))
-
-    trnX_L=X[perm_id[:nL_trn]]
-    trnY_L=Y[perm_id[:nL_trn]]
-
-    valX_L=X[perm_id[nL_trn:nL_trn+nL_val]]
-    valY_L=Y[perm_id[nL_trn:nL_trn+nL_val]]
-
-    trnX_U=X[perm_id[nL_trn+nL_val:nL_trn+nL_val+nU_trn]]
-    valX_U=X[perm_id[nL_trn+nL_val+nU_trn:]]
-
-    scaler_Y = StandardScaler()
-    scaler_Y.fit(Y)
-    trnY_L=scaler_Y.transform(trnY_L)
-    valY_L=scaler_Y.transform(valY_L)
-
-
+    trnY_L = list(data['trnY_L'])
     trnY_L = np.stack(trnY_L, axis=0)
 
     mu_prior= torch.tensor(np.mean(trnY_L,0), dtype = torch.float32, device = cuda_device)
     cov_prior= torch.tensor(np.cov(trnY_L.T), dtype = torch.float32, device = cuda_device)
 
-    trnX_L = trnX_L[:16]
-    trnY_L = trnY_L[:16]
-
-    tstX = tstX[:16]
-    tstY = tstY[:16]
-
-    tstX = [tensorize(smile) for smile in tstX]
-    trnX_L = [tensorize(smile) for smile in trnX_L]
-
-    batch_size_L=int(args.batch_size* nL_trn / (nL_trn+nU_trn))
-    batch_size_U=int(args.batch_size* nU_trn / (nL_trn+nU_trn))
+    print("mu_prior ", mu_prior)
+    print("cov_prior ", cov_prior)
 
     model = CondJTNNVAE(vocab, args, batch_size_L, batch_size_U, mu_prior, cov_prior)
+    #model = CondJTNNVAE(vocab, args.hidden_size, args.prop_hidden_size, args.latent_size, args.depthT, args.depthG, args.infomax_true, args.infomax_false, args.u_kld_y, args.ymse_factor)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     checkpoint = torch.load(args.save_dir + "/model.iter-" + str(args.load_epoch))
@@ -128,8 +106,8 @@ if __name__ == "__main__":
     if torch.cuda.is_available():
         model = model.cuda()
 
-    trn_loader = MolTreeFolder(trnX_L, vocab, args.batch_size, num_workers=4)
-    tst_loader = MolTreeFolder(tstX, vocab, args.batch_size, num_workers=4)
+    loader = SSMolTreeFolder(args.train, vocab, batch_size_L, batch_size_U, num_workers=4) #make siamese dataloader
+    #tst_loader = MolTreeFolder(tstX, vocab, args.batch_size, num_workers=4)
 
 
     # property prediction performance
@@ -137,6 +115,18 @@ if __name__ == "__main__":
 
     prediY = []
     model.eval()
+    for batch in loader:
+        x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder, \
+            prop_x_batch, prop_x_jtenc_holder, prop_x_mpn_holder, prop_x_jtmpn_holder, props \
+                = batch
+
+        y_L_mu, y_L_lsgms = self.predi(*prop_x_jtenc_holder)
+
+        loss, \
+        prop_loss, prop_tree_kl, prop_mol_kl, prop_word_acc, prop_topo_acc, prop_assm_acc, prop_log_prior_y, \
+        u_loss, tree_kl, mol_kl, u_word_acc, u_topo_acc, u_assm_acc, u_kld_y, \
+        objYpred_MSE, d_true_loss, d_fake_loss = model(batch, beta)
+
     for batch in trn_loader:
         x_batch, x_jtenc_holder, x_mpn_holder, x_jtmpn_holder = batch
         predi_y_L_mu, predi_y_L_lsgms = model.predi(*x_jtenc_holder)

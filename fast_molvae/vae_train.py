@@ -74,6 +74,7 @@ if "zinc310k-processed" in args.train:
 
     mu_prior= torch.tensor(np.mean(trnY_L,0), dtype = torch.float32, device = cuda_device)
     cov_prior= torch.tensor(np.cov(trnY_L.T), dtype = torch.float32, device = cuda_device)
+    
 
     print("mu_prior ", mu_prior)
     print("cov_prior ", cov_prior)

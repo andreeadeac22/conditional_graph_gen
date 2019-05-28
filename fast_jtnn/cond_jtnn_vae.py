@@ -64,8 +64,8 @@ class CondJTNNVAE(nn.Module):
         tree_vecs, tree_mess = self.jtnn(*jtenc_holder)
         mol_vecs = self.mpn(*mpn_holder)
 
-        prop_tree_vecs = self.tree_enc_dense(torch.cat((tree_vecs, props), dim=1))
-        prop_mol_vecs = self.mol_enc_dense(torch.cat((mol_vecs, props), dim=1))
+        #prop_tree_vecs = self.tree_enc_dense(torch.cat((tree_vecs, props), dim=1))
+        #prop_mol_vecs = self.mol_enc_dense(torch.cat((mol_vecs, props), dim=1))
 
         return prop_tree_vecs, tree_mess, prop_mol_vecs
 
@@ -114,7 +114,7 @@ class CondJTNNVAE(nn.Module):
 
         #Unlabeled
         y_U_mu, y_U_lsgms = self.predi(*x_jtenc_holder)
-        y_U_sample = self.draw_sample(y_U_mu, y_U_lsgms)
+        y_U_sample = self.draw_sample(y_U_mu, y_U_lsgms) #torch.diagonal(y_U_lsgms, dim1=-2, dim2=-1))
         x_tree_vecs, x_tree_mess, x_mol_vecs = self.encode(x_jtenc_holder, x_mpn_holder, y_U_sample)
 
         z_tree_vecs, tree_kl = self.rsample(x_tree_vecs, self.T_mean, self.T_var)
@@ -129,8 +129,23 @@ class CondJTNNVAE(nn.Module):
 
         u_kl_div = tree_kl + mol_kl
         u_kld_y = torch.mean(self.noniso_KLD(y_U_mu, y_U_lsgms)) * self.u_kld_y_factor
+        prop_kld_y = torch.mean(self.noniso_KLD(y_L_mu, y_L_lsgms))
 
-        u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div + u_kld_y
+        u_iso_kld_y = self.iso_KLD(y_U_mu, y_U_lsgms)
+        prop_iso_kld_y = self.iso_KLD(y_L_mu, y_L_lsgms)
+
+
+        #print("y_L_mu ", y_L_mu)
+        #print("y_L_lsgms ", y_L_lsgms)
+        #print("y_U_mu ", y_U_mu)
+        #print("y_U_lsgms ", y_U_lsgms)
+        #print("prop_kld_y ", prop_kld_y)
+        #print("u_kld_y ", u_kld_y)
+        #print("prop_iso_kld_y ", prop_iso_kld_y)
+        #print("u_iso_kld_y ", u_iso_kld_y)
+
+
+        u_loss = u_word_loss + u_topo_loss + u_assm_loss + beta * u_kl_div + u_iso_kld_y
         #print("u_loss ", u_loss)
 
         objYpred_MSE = torch.mean(torch.sum((props-y_L_mu) * (props-y_L_mu), dim=1))
@@ -213,19 +228,31 @@ class CondJTNNVAE(nn.Module):
             + torch.sum( torch.mm((x - self.mu_prior), torch.inverse(self.cov_prior)) * (x - self.mu_prior), dim=1) )
 
 
+    def iso_KLD(self, mu, log_sigma_sq):
+        diag_cov_prior = torch.diag(self.cov_prior)
+        kld = 0.5* (torch.log(diag_cov_prior) - log_sigma_sq) + \
+            (torch.exp(log_sigma_sq) + (mu-self.mu_prior) * (mu-self.mu_prior)) / (2*diag_cov_prior)
+        #print("kld ", kld)
+        kld =  torch.mean(torch.sum(kld, dim=1))
+        return kld
+
+
     def noniso_KLD(self, mu, log_sigma_sq):
-        print("mu ", mu)
-        print("log_sigma_sq ", log_sigma_sq)
+        #print("mu ", mu)
+        #print("log_sigma_sq ", log_sigma_sq)
         exp_sgm = torch.exp(log_sigma_sq) # exp_sgm.shape is (100,3)
         all_traces = []
         for i in range(exp_sgm.shape[0]):
-            all_traces.append(torch.trace(torch.mm(torch.inverse(self.cov_prior), torch.diag(exp_sgm[i]))))
-        del exp_sgm
+            all_traces.append(torch.trace(torch.mm(torch.inverse(torch.diag(torch.diag(self.cov_prior))), torch.diag(exp_sgm[i]))))
+            #all_traces.append(torch.trace(torch.mm(torch.inverse(self.cov_prior), exp_sgm[i])))
+        #del exp_sgm
         all_traces = torch.tensor(all_traces, device=cuda_device)
         #print("all_traces ", all_traces)
         return 0.5 * ( all_traces  \
-            + torch.sum( torch.mm((self.mu_prior - mu), torch.inverse(self.cov_prior)) * (self.mu_prior - mu), dim=1) - float(self.cov_prior.shape[0]) + np.log(np.linalg.det(self.cov_prior.cpu())) \
+            + torch.sum( torch.mm((self.mu_prior - mu), torch.inverse(torch.diag(torch.diag(self.cov_prior)))) * (self.mu_prior - mu), dim=1) - float(self.cov_prior.shape[0]) + np.log(np.linalg.det(self.cov_prior.cpu())) \
+            #- torch.sum(torch.diagonal(log_sigma_sq, dim1=-2, dim2=-1), dim=1))
             - torch.sum(log_sigma_sq, dim=1))
+
 
 
     def assm(self, mol_batch, jtmpn_holder, x_mol_vecs, x_tree_mess):

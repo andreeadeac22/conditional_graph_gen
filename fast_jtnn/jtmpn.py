@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import rdkit.Chem as Chem
+from rdkit.Chem import Descriptors, QED
 
 from .chemutils import get_mol
 from .nnutils import create_var, index_select_ND
@@ -9,7 +10,7 @@ from .nnutils import create_var, index_select_ND
 
 ELEM_LIST = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'Al', 'I', 'B', 'K', 'Se', 'Zn', 'H', 'Cu', 'Mn', 'unknown']
 
-ATOM_FDIM = len(ELEM_LIST) + 6 + 5 + 1
+ATOM_FDIM = len(ELEM_LIST) + 6 + 5 + 1 + 3 # last 3 are mol prop
 BOND_FDIM = 5
 MAX_NB = 15
 
@@ -18,11 +19,12 @@ def onek_encoding_unk(x, allowable_set):
         x = allowable_set[-1]
     return list(map(lambda s: int(x == s), allowable_set))
 
-def atom_features(atom):
+def atom_features(atom, properties):
     return torch.Tensor(onek_encoding_unk(atom.GetSymbol(), ELEM_LIST)
             + onek_encoding_unk(atom.GetDegree(), [0,1,2,3,4,5])
             + onek_encoding_unk(atom.GetFormalCharge(), [-1,-2,1,2,0])
-            + [atom.GetIsAromatic()])
+            + [atom.GetIsAromatic()]
+            + properties)
 
 def bond_features(bond):
     bt = bond.GetBondType()
@@ -68,21 +70,6 @@ class JTMPN(nn.Module):
         ainput = torch.cat([fatoms, nei_message], dim=1)
         atom_hiddens = F.relu(self.W_o(ainput))
 
-        #index_select retrieves the same thing maaany times
-        #because you can see how many times each index is repeated
-        #then the torch.bmm after it actually performs the computation of the result
-        #so i'm thinking if we could somehow hack the jtmpn function
-        #make a custom one, where we'd also pass h_G
-        #and it'd compute scores for that G on the fly
-        #without having to copy h_G a bajillion times
-        #your batches are tiny (8—16 things)
-        #so even a for loop over them for this cause could be OK
-
-        # create a list of mol_vecs, with one element containing only the candidate vecs for one molecule
-        # do a for loop over this list, multiply with the relevant h_G
-        # stack the list back into one tensor (this is now fine since you only have one scalar per candidate, so OK memory wise)
-
-
         mol_vecs = []
         for st,le in scope:
             mol_vec = atom_hiddens.narrow(0, st, le).sum(dim=0) / le
@@ -91,7 +78,7 @@ class JTMPN(nn.Module):
         mol_vecs = torch.stack(mol_vecs, dim=0)
         #print("mol_vecs ", mol_vecs)
         return mol_vecs
-        
+
 
     @staticmethod
     def tensorize(cand_batch, mess_dict):
@@ -103,12 +90,13 @@ class JTMPN(nn.Module):
 
         for smiles,all_nodes,ctr_node in cand_batch:
             mol = Chem.MolFromSmiles(smiles)
+            properties = [Descriptors.ExactMolWt(mol), Descriptors.MolLogP(mol), QED.qed(mol)]
             Chem.Kekulize(mol) #The original jtnn version kekulizes. Need to revisit why it is necessary
             n_atoms = mol.GetNumAtoms()
             ctr_bid = ctr_node.idx
 
             for atom in mol.GetAtoms():
-                fatoms.append( atom_features(atom) )
+                fatoms.append(atom_features(atom, properties))
                 in_bonds.append([])
 
             for bond in mol.GetBonds():

@@ -2,13 +2,14 @@ import torch
 import torch.nn as nn
 import rdkit.Chem as Chem
 import torch.nn.functional as F
+from rdkit.Chem import Descriptors, QED
 
 from .nnutils import *
 from .chemutils import get_mol
 
 ELEM_LIST = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'Al', 'I', 'B', 'K', 'Se', 'Zn', 'H', 'Cu', 'Mn', 'unknown']
 
-ATOM_FDIM = len(ELEM_LIST) + 6 + 5 + 4 + 1
+ATOM_FDIM = len(ELEM_LIST) + 6 + 5 + 4 + 1 + 3
 BOND_FDIM = 5 + 6
 MAX_NB = 6
 
@@ -17,12 +18,13 @@ def onek_encoding_unk(x, allowable_set):
         x = allowable_set[-1]
     return list(map(lambda s: int(x == s), allowable_set))
 
-def atom_features(atom):
+def atom_features(atom, properties):
     return torch.Tensor(onek_encoding_unk(atom.GetSymbol(), ELEM_LIST)
             + onek_encoding_unk(atom.GetDegree(), [0,1,2,3,4,5])
             + onek_encoding_unk(atom.GetFormalCharge(), [-1,-2,1,2,0])
             + onek_encoding_unk(int(atom.GetChiralTag()), [0,1,2,3])
-            + [atom.GetIsAromatic()])
+            + [atom.GetIsAromatic()]
+            + properties)
 
 def bond_features(bond):
     bt = bond.GetBondType()
@@ -81,10 +83,12 @@ class MPN(nn.Module):
 
         for smiles in mol_batch:
             mol = get_mol(smiles)
+            prop_mol=Chem.MolFromSmiles(smiles)
+            properties = [Descriptors.ExactMolWt(prop_mol), Descriptors.MolLogP(prop_mol), QED.qed(prop_mol)]
             #mol = Chem.MolFromSmiles(smiles)
             n_atoms = mol.GetNumAtoms()
             for atom in mol.GetAtoms():
-                fatoms.append( atom_features(atom) )
+                fatoms.append( atom_features(atom, properties) )
                 in_bonds.append([])
 
             for bond in mol.GetBonds():

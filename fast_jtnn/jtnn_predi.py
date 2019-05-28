@@ -11,6 +11,7 @@ class JTNNPredi(nn.Module):
     def __init__(self, hidden_size, prop_hidden_size, depth, embedding):
         super(JTNNPredi, self).__init__()
         self.hidden_size = hidden_size
+        self.prop_hidden_size = prop_hidden_size
         self.depth = depth
 
         self.embedding = embedding
@@ -20,8 +21,8 @@ class JTNNPredi(nn.Module):
         )
         self.GRU = GraphGRU(hidden_size, hidden_size, depth=depth)
 
-        self.prop_predi_mu = nn.Linear(hidden_size, prop_hidden_size)
-        self.prop_predi_lsgms = nn.Linear(hidden_size, prop_hidden_size)
+        self.prop_predi_mu = nn.Linear(hidden_size, self.prop_hidden_size)
+        self.prop_predi_lsgms = nn.Linear(hidden_size, self.prop_hidden_size) # * self.prop_hidden_size)
 
 
     def forward(self, fnode, fmess, node_graph, mess_graph, scope):
@@ -49,6 +50,11 @@ class JTNNPredi(nn.Module):
 
         y_L_mu = self.prop_predi_mu(tree_vecs)
         y_L_lsgms = self.prop_predi_lsgms(tree_vecs)
+
+        #y_L_lsgms = torch.reshape(y_L_lsgms, \
+        #    (y_L_lsgms.shape[0], self.prop_hidden_size, self.prop_hidden_size))
+
+        #print("y_L_lsgms ", y_L_lsgms)
 
         return y_L_mu, y_L_lsgms
 
