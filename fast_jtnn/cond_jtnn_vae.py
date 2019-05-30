@@ -67,7 +67,7 @@ class CondJTNNVAE(nn.Module):
         #prop_tree_vecs = self.tree_enc_dense(torch.cat((tree_vecs, props), dim=1))
         #prop_mol_vecs = self.mol_enc_dense(torch.cat((mol_vecs, props), dim=1))
 
-        return prop_tree_vecs, tree_mess, prop_mol_vecs
+        return tree_vecs, tree_mess, mol_vecs
 
 
     def rsample(self, z_vecs, W_mean, W_var):

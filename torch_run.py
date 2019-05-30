@@ -99,6 +99,9 @@ def run():
     mu_prior=torch.tensor(np.mean(trnY_L,0), dtype=torch.float32, device=device)
     cov_prior=torch.tensor(np.cov(trnY_L.T), dtype=torch.float32, device=device)
 
+    print("mu_prior ", mu_prior)
+    print("cov_prior ", cov_prior)
+
     #mu_prior = torch.unsqueeze(torch.mean(y_L, 0), dim=0) # (1,3)
     #y_L_transpose = torch.transpose(y_L, 0, 1)
     #np_cov = np.cov(y_L_transpose.cpu())

@@ -5,7 +5,7 @@ import numpy as np
 
 from torch_constants import *
 from util import *
-from constants import *
+from torch_constants import *
 
 class TorchSSVAE(nn.Module):
     def __init__(self, mu_prior, cov_prior, seqlen_x, dim_x, dim_y, dim_z=100, dim_h=250, n_hidden=3, batch_size=200, beta=10000, char_set=[' ']):
@@ -113,6 +113,9 @@ class TorchSSVAE(nn.Module):
         L_log_prior_y = self.noniso_logpdf(y_L)
         L_KLD_z = iso_KLD(z_L_mu, z_L_lsgms)
         objL_res = - torch.mean(L_log_lik + L_log_prior_y - L_KLD_z)
+
+        #print("objL: %")
+
         return objL_res
 
 
