@@ -86,8 +86,8 @@ if __name__ == "__main__":
     vocab = [x.strip("\r\n ") for x in open(args.vocab)]
     vocab = Vocab(vocab)
 
-    #create_test_files(args)
-    #exit(0)
+    create_test_files(args)
+    exit(0)
 
     tstY = np.asarray(pickle.load(open(args.testY + "processed-testY.pkl", "rb")))
 
@@ -166,20 +166,20 @@ if __name__ == "__main__":
         for j in range(dim_y):
             #print([j, mean_absolute_error(tstY[:,j], prediY[:,j])], file=e)
             print("Dimension is: ", j, file=e)
-            absolute_error = np.abs(tstY[:,j]- tstY_hat[:,j])
+            absolute_error = np.abs(tstY[:9984,j]- tstY_hat[:,j])
             print("mean: ", np.mean(absolute_error), file=e)
             print("std: ", np.std(absolute_error), file=e)
-            print([j, mean_absolute_error(tstY[:,j], tstY_hat[:,j])], file=e)
+            print([j, mean_absolute_error(tstY[:9984,j], tstY_hat[:,j])], file=e)
 
 
     with open(args.save_dir + "scaled_prop_pred.txt", "w") as e:
         for j in range(dim_y):
             #print([j, mean_absolute_error(tstY[:,j], prediY[:,j])], file=e)
             print("Dimension is: ", j, file=e)
-            absolute_error = np.abs(scaled_tstY[:,j]- prediY[:,j])
+            absolute_error = np.abs(scaled_tstY[:9984,j]- prediY[:,j])
             print("mean: ", np.mean(absolute_error), file=e)
             print("std: ", np.std(absolute_error), file=e)
-            print([j, mean_absolute_error(scaled_tstY[:,j], prediY[:,j])], file=e)
+            print([j, mean_absolute_error(scaled_tstY[:9984,j], prediY[:,j])], file=e)
 
 
 

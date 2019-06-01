@@ -151,4 +151,10 @@ def check_diag():
          [-4.6490e-02,  4.9198e-02, -4.7358e-02], \
          [ 2.5900e-03,  2.6393e-02,  3.1483e-02]]]), dim1= -2 , dim2 = -1 ))
 
-check_diag()
+def try_concat():
+    import numpy as np
+    a = np.array([1, 2, 3])
+    b = np.array([2, 3, 4])
+    print(np.vstack((a,b)))
+
+try_concat()
