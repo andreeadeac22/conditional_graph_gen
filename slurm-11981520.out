@@ -1,0 +1,1604 @@
+Changed directory to /home/aid25.
+
+JobID: 11981520
+======
+Time: Thu 30 May 23:55:03 BST 2019
+Running on master node: gpu-e-19
+Current directory: /home/aid25
+
+Nodes allocated:
+================
+gpu-e-19
+
+numtasks=1, numnodes=1, mpi_tasks_per_node=1 (OMP_NUM_THREADS=1)
+
+Executing command:
+==================
+bash /home/aid25/commands.sh 
+
+/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/openmpi-1.10.7-jdc7f4fjdq5roxhadufd6h66xkwuytss/lib:/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-5.4.0-fis24ggupugiobii56fesif2y3qulpdr/lib64:/usr/local/software/spack/spack-0.11.2/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-5.4.0-fis24ggupugiobii56fesif2y3qulpdr/lib:/usr/local/Cluster-Apps/cuda/8.0/lib64:/usr/local/Cluster-Apps/cuda/8.0/lib:/usr/local/software/global/lib:/usr/local/Cluster-Apps/vgl/2.5.1/64/lib:/usr/local/software/slurm/current/lib
+/home/aid25/miniconda3/lib/libstdc++.so.6.0.25
+	libstdc++.so.6 (libc6,x86-64) => /lib64/libstdc++.so.6
+	libstdc++.so.6 (libc6) => /lib/libstdc++.so.6
+	libstdc++.so.5 (libc6,x86-64) => /lib64/libstdc++.so.5
+	libstdc++.so.5 (libc6) => /lib/libstdc++.so.5
+nL is:  150000
+nU is:  150000
+nL_trn:  142500
+nL_val:  7500
+nU_trn:  142500
+nU_val:  7500
+Namespace(anneal_iter=40000, anneal_rate=0.9, batch_size=32, beta=0.13, clip_norm=50.0, data='../data/zinc310k/frac0.5/', depthG=3, depthT=20, epoch=20, hidden_size=450, infomax_factor_false=100, infomax_factor_true=200, kl_anneal_iter=1000, latent_size=56, load_epoch=170000, lr=0.001, max_beta=1.0, print_iter=50, prop_hidden_size=3, save_dir='vae_model8/', save_iter=5000, step_beta=0.001, train='zinc310k-processed/frac0.5/', u_kld_y_factor=1.0, warmup=40000, ymse_factor=1)
+batch_size_L  16
+batch_size_U  16
+mu_prior  tensor([-0.0014, -0.0059,  0.0001], device='cuda:0')
+cov_prior  tensor([[ 1.0023,  0.4335, -0.5482],
+        [ 0.4335,  0.9995, -0.2985],
+        [-0.5482, -0.2985,  1.0027]], device='cuda:0')
+CondJTNNVAE(
+  (predi): JTNNPredi(
+    (embedding): Embedding(907, 450)
+    (outputNN): Sequential(
+      (0): Linear(in_features=900, out_features=450, bias=True)
+      (1): ReLU()
+    )
+    (GRU): GraphGRU(
+      (W_z): Linear(in_features=900, out_features=450, bias=True)
+      (W_r): Linear(in_features=450, out_features=450, bias=False)
+      (U_r): Linear(in_features=450, out_features=450, bias=True)
+      (W_h): Linear(in_features=900, out_features=450, bias=True)
+    )
+    (prop_predi_mu): Linear(in_features=450, out_features=3, bias=True)
+    (prop_predi_lsgms): Linear(in_features=450, out_features=3, bias=True)
+  )
+  (jtnn): JTNNEncoder(
+    (embedding): Embedding(907, 450)
+    (outputNN): Sequential(
+      (0): Linear(in_features=900, out_features=450, bias=True)
+      (1): ReLU()
+    )
+    (GRU): GraphGRU(
+      (W_z): Linear(in_features=900, out_features=450, bias=True)
+      (W_r): Linear(in_features=450, out_features=450, bias=False)
+      (U_r): Linear(in_features=450, out_features=450, bias=True)
+      (W_h): Linear(in_features=900, out_features=450, bias=True)
+    )
+  )
+  (decoder): CondJTNNDecoder(
+    (embedding): Embedding(907, 450)
+    (W_z): Linear(in_features=900, out_features=450, bias=True)
+    (U_r): Linear(in_features=450, out_features=450, bias=False)
+    (W_r): Linear(in_features=450, out_features=450, bias=True)
+    (W_h): Linear(in_features=900, out_features=450, bias=True)
+    (W): Linear(in_features=481, out_features=450, bias=True)
+    (U): Linear(in_features=481, out_features=450, bias=True)
+    (U_i): Linear(in_features=900, out_features=450, bias=True)
+    (W_o): Linear(in_features=450, out_features=907, bias=True)
+    (U_o): Linear(in_features=450, out_features=1, bias=True)
+    (pred_loss): CrossEntropyLoss()
+    (stop_loss): BCEWithLogitsLoss()
+  )
+  (prop_dense): Linear(in_features=3, out_features=3, bias=True)
+  (relu): ReLU()
+  (tree_enc_dense): Linear(in_features=453, out_features=450, bias=True)
+  (mol_enc_dense): Linear(in_features=453, out_features=450, bias=True)
+  (jtmpn): JTMPN(
+    (W_i): Linear(in_features=40, out_features=450, bias=False)
+    (W_h): Linear(in_features=450, out_features=450, bias=False)
+    (W_o): Linear(in_features=485, out_features=450, bias=True)
+  )
+  (mpn): MPN(
+    (W_i): Linear(in_features=50, out_features=450, bias=False)
+    (W_h): Linear(in_features=450, out_features=450, bias=False)
+    (W_o): Linear(in_features=489, out_features=450, bias=True)
+  )
+  (A_assm): Linear(in_features=31, out_features=450, bias=False)
+  (assm_loss): CrossEntropyLoss()
+  (T_mean): Linear(in_features=450, out_features=28, bias=True)
+  (T_var): Linear(in_features=450, out_features=28, bias=True)
+  (G_mean): Linear(in_features=450, out_features=28, bias=True)
+  (G_var): Linear(in_features=450, out_features=28, bias=True)
+  (infomax_loss): BCEWithLogitsLoss()
+  (discriminator): Linear(in_features=31, out_features=1, bias=True)
+)
+Model #Params: 8293K
+prop  ['prop-tensors-1.pkl', 'prop-tensors-6.pkl', 'prop-tensors-8.pkl', 'prop-tensors-9.pkl', 'prop-tensors-7.pkl', 'prop-tensors-0.pkl', 'prop-tensors-3.pkl', 'prop-tensors-4.pkl', 'prop-tensors-5.pkl', 'prop-tensors-2.pkl']
+u  ['u-tensors-0.pkl', 'u-tensors-7.pkl', 'u-tensors-9.pkl', 'u-tensors-8.pkl', 'u-tensors-6.pkl', 'u-tensors-1.pkl', 'u-tensors-2.pkl', 'u-tensors-5.pkl', 'u-tensors-4.pkl', 'u-tensors-3.pkl']
+Epoch  18
+nb_tensors  329
+nb_par  67
+SSMolTreeFolder iter
+fn  zinc310k-processed/frac0.5/prop-tensors-1.pkl zinc310k-processed/frac0.5/u-tensors-0.pkl
+Before load
+Loaded
+/home/aid25/miniconda3/envs/cenv/lib/python3.6/site-packages/torch/nn/_reduction.py:49: UserWarning: size_average and reduce args will be deprecated, please use reduction='sum' instead.
+  warnings.warn(warning.format(ret))
+/home/aid25/miniconda3/envs/cenv/lib/python3.6/site-packages/torch/distributed/distributed_c10d.py:86: UserWarning: torch.distributed.reduce_op is deprecated, please use torch.distributed.ReduceOp instead
+  warnings.warn("torch.distributed.reduce_op is deprecated, please use "
+[170050] Beta: 0.130, Loss: 14.66, Prop_loss: 7.36, U_loss: 6.47, YMSE: 0.21, DTrue: 0.11, DFalse: 0.51, PNorm: 957.79, GNorm: 17.11
+[170050] Prop_KL: 37.24, 22.97, Word: 95.19, Topo: 99.42, Assm: 96.01, Log_prior_y: -3.93
+[170050] Unsup_KL: 37.46, 22.88, Word: 95.17, Topo: 99.52, Assm: 94.60, U_kld_y: 0.32
+
+[170100] Beta: 0.130, Loss: 15.86, Prop_loss: 7.42, U_loss: 6.46, YMSE: 0.21, DTrue: 0.11, DFalse: 1.66, PNorm: 957.91, GNorm: 17.66
+[170100] Prop_KL: 36.89, 22.27, Word: 95.15, Topo: 99.47, Assm: 95.29, Log_prior_y: -4.06
+[170100] Unsup_KL: 37.31, 22.13, Word: 95.05, Topo: 99.46, Assm: 95.41, U_kld_y: 0.29
+
+[170150] Beta: 0.130, Loss: 17.31, Prop_loss: 7.24, U_loss: 6.44, YMSE: 0.20, DTrue: 0.20, DFalse: 3.23, PNorm: 958.00, GNorm: 50.00
+[170150] Prop_KL: 36.73, 22.54, Word: 95.48, Topo: 99.57, Assm: 95.60, Log_prior_y: -4.01
+[170150] Unsup_KL: 37.55, 22.47, Word: 95.32, Topo: 99.48, Assm: 95.82, U_kld_y: 0.33
+
+[170200] Beta: 0.130, Loss: 15.79, Prop_loss: 7.17, U_loss: 6.52, YMSE: 0.19, DTrue: 0.10, DFalse: 1.80, PNorm: 958.10, GNorm: 13.66
+[170200] Prop_KL: 36.93, 22.45, Word: 95.68, Topo: 99.51, Assm: 95.62, Log_prior_y: -3.96
+[170200] Unsup_KL: 37.74, 22.44, Word: 95.44, Topo: 99.45, Assm: 95.72, U_kld_y: 0.30
+
+[170250] Beta: 0.130, Loss: 15.52, Prop_loss: 7.40, U_loss: 6.49, YMSE: 0.20, DTrue: 0.14, DFalse: 1.29, PNorm: 958.20, GNorm: 18.12
+[170250] Prop_KL: 37.05, 22.59, Word: 95.58, Topo: 99.55, Assm: 94.50, Log_prior_y: -4.04
+[170250] Unsup_KL: 37.15, 22.62, Word: 95.45, Topo: 99.39, Assm: 94.67, U_kld_y: 0.37
+
+[170300] Beta: 0.130, Loss: 14.85, Prop_loss: 7.41, U_loss: 6.50, YMSE: 0.20, DTrue: 0.13, DFalse: 0.60, PNorm: 958.31, GNorm: 23.31
+[170300] Prop_KL: 36.58, 22.78, Word: 95.04, Topo: 99.49, Assm: 95.10, Log_prior_y: -3.97
+[170300] Unsup_KL: 37.37, 22.76, Word: 95.25, Topo: 99.45, Assm: 95.17, U_kld_y: 0.31
+
+[170350] Beta: 0.130, Loss: 15.25, Prop_loss: 7.23, U_loss: 6.43, YMSE: 0.20, DTrue: 0.12, DFalse: 1.26, PNorm: 958.41, GNorm: 19.19
+[170350] Prop_KL: 37.13, 22.50, Word: 95.66, Topo: 99.58, Assm: 96.07, Log_prior_y: -4.01
+[170350] Unsup_KL: 37.54, 22.41, Word: 95.61, Topo: 99.51, Assm: 95.44, U_kld_y: 0.32
+
+[170400] Beta: 0.130, Loss: 15.42, Prop_loss: 7.25, U_loss: 6.51, YMSE: 0.23, DTrue: 0.15, DFalse: 1.29, PNorm: 958.50, GNorm: 23.12
+[170400] Prop_KL: 36.48, 22.87, Word: 95.71, Topo: 99.46, Assm: 95.71, Log_prior_y: -3.98
+[170400] Unsup_KL: 37.27, 22.88, Word: 95.54, Topo: 99.40, Assm: 94.89, U_kld_y: 0.28
+
+[170450] Beta: 0.130, Loss: 15.41, Prop_loss: 7.37, U_loss: 6.49, YMSE: 0.20, DTrue: 0.13, DFalse: 1.21, PNorm: 958.62, GNorm: 16.61
+[170450] Prop_KL: 36.85, 23.04, Word: 95.46, Topo: 99.56, Assm: 95.46, Log_prior_y: -4.08
+[170450] Unsup_KL: 37.82, 23.14, Word: 95.29, Topo: 99.43, Assm: 95.79, U_kld_y: 0.32
+
+[170500] Beta: 0.130, Loss: 15.14, Prop_loss: 7.32, U_loss: 6.49, YMSE: 0.19, DTrue: 0.15, DFalse: 0.99, PNorm: 958.74, GNorm: 16.07
+[170500] Prop_KL: 36.79, 22.56, Word: 95.22, Topo: 99.55, Assm: 95.64, Log_prior_y: -3.99
+[170500] Unsup_KL: 37.49, 22.54, Word: 95.29, Topo: 99.58, Assm: 94.68, U_kld_y: 0.38
+
+[170550] Beta: 0.130, Loss: 14.22, Prop_loss: 7.35, U_loss: 6.40, YMSE: 0.20, DTrue: 0.10, DFalse: 0.17, PNorm: 958.85, GNorm: 17.86
+[170550] Prop_KL: 36.86, 22.32, Word: 95.36, Topo: 99.56, Assm: 95.48, Log_prior_y: -4.08
+[170550] Unsup_KL: 37.59, 22.32, Word: 95.46, Topo: 99.38, Assm: 95.34, U_kld_y: 0.33
+
+[170600] Beta: 0.130, Loss: 15.51, Prop_loss: 7.28, U_loss: 6.45, YMSE: 0.19, DTrue: 0.10, DFalse: 1.50, PNorm: 958.94, GNorm: 21.45
+[170600] Prop_KL: 37.07, 21.87, Word: 95.40, Topo: 99.48, Assm: 95.88, Log_prior_y: -3.99
+[170600] Unsup_KL: 37.43, 21.94, Word: 95.46, Topo: 99.41, Assm: 95.73, U_kld_y: 0.31
+
+[170650] Beta: 0.130, Loss: 14.14, Prop_loss: 7.17, U_loss: 6.40, YMSE: 0.19, DTrue: 0.11, DFalse: 0.26, PNorm: 959.06, GNorm: 23.14
+[170650] Prop_KL: 36.57, 21.49, Word: 95.62, Topo: 99.51, Assm: 95.94, Log_prior_y: -3.97
+[170650] Unsup_KL: 37.64, 21.37, Word: 95.22, Topo: 99.47, Assm: 95.47, U_kld_y: 0.32
+
+[170700] Beta: 0.130, Loss: 17.64, Prop_loss: 7.21, U_loss: 6.38, YMSE: 0.18, DTrue: 0.13, DFalse: 3.74, PNorm: 959.15, GNorm: 50.00
+[170700] Prop_KL: 36.74, 21.50, Word: 95.81, Topo: 99.40, Assm: 95.23, Log_prior_y: -4.00
+[170700] Unsup_KL: 37.41, 21.50, Word: 95.28, Topo: 99.53, Assm: 95.89, U_kld_y: 0.34
+
+[170750] Beta: 0.130, Loss: 17.07, Prop_loss: 7.26, U_loss: 6.43, YMSE: 0.19, DTrue: 0.08, DFalse: 3.10, PNorm: 959.24, GNorm: 21.74
+[170750] Prop_KL: 36.54, 21.73, Word: 95.69, Topo: 99.52, Assm: 94.20, Log_prior_y: -4.01
+[170750] Unsup_KL: 37.59, 21.72, Word: 95.17, Topo: 99.45, Assm: 95.34, U_kld_y: 0.31
+
+[170800] Beta: 0.130, Loss: 14.85, Prop_loss: 7.30, U_loss: 6.47, YMSE: 0.20, DTrue: 0.13, DFalse: 0.76, PNorm: 959.35, GNorm: 21.04
+[170800] Prop_KL: 37.22, 22.26, Word: 95.30, Topo: 99.47, Assm: 95.25, Log_prior_y: -3.92
+[170800] Unsup_KL: 37.75, 22.22, Word: 95.48, Topo: 99.53, Assm: 94.28, U_kld_y: 0.29
+
+[170850] Beta: 0.130, Loss: 15.90, Prop_loss: 7.28, U_loss: 6.39, YMSE: 0.20, DTrue: 0.10, DFalse: 1.94, PNorm: 959.44, GNorm: 21.50
+[170850] Prop_KL: 36.78, 21.77, Word: 95.38, Topo: 99.51, Assm: 95.72, Log_prior_y: -4.00
+[170850] Unsup_KL: 37.47, 21.73, Word: 95.20, Topo: 99.49, Assm: 95.93, U_kld_y: 0.28
+
+fn  zinc310k-processed/frac0.5/prop-tensors-6.pkl zinc310k-processed/frac0.5/u-tensors-7.pkl
+Before load
+Loaded
+/home/aid25/miniconda3/envs/cenv/lib/python3.6/site-packages/torch/nn/functional.py:1332: UserWarning: nn.functional.sigmoid is deprecated. Use torch.sigmoid instead.
+  warnings.warn("nn.functional.sigmoid is deprecated. Use torch.sigmoid instead.")
+[170900] Beta: 0.130, Loss: 16.69, Prop_loss: 7.15, U_loss: 6.41, YMSE: 0.21, DTrue: 0.13, DFalse: 2.79, PNorm: 959.55, GNorm: 27.03
+[170900] Prop_KL: 36.67, 21.89, Word: 95.70, Topo: 99.49, Assm: 95.82, Log_prior_y: -4.00
+[170900] Unsup_KL: 37.58, 21.74, Word: 95.35, Topo: 99.49, Assm: 95.93, U_kld_y: 0.28
+
+[170950] Beta: 0.130, Loss: 14.69, Prop_loss: 7.24, U_loss: 6.58, YMSE: 0.21, DTrue: 0.11, DFalse: 0.56, PNorm: 959.66, GNorm: 20.10
+[170950] Prop_KL: 36.84, 22.85, Word: 95.64, Topo: 99.53, Assm: 95.63, Log_prior_y: -3.96
+[170950] Unsup_KL: 37.65, 22.77, Word: 95.04, Topo: 99.50, Assm: 95.06, U_kld_y: 0.30
+
+[171000] Beta: 0.130, Loss: 16.13, Prop_loss: 7.36, U_loss: 6.43, YMSE: 0.20, DTrue: 0.19, DFalse: 1.96, PNorm: 959.76, GNorm: 16.81
+[171000] Prop_KL: 36.74, 22.74, Word: 95.37, Topo: 99.51, Assm: 94.50, Log_prior_y: -4.01
+[171000] Unsup_KL: 37.62, 22.60, Word: 95.59, Topo: 99.54, Assm: 94.64, U_kld_y: 0.29
+
+[171050] Beta: 0.131, Loss: 15.84, Prop_loss: 7.33, U_loss: 6.52, YMSE: 0.19, DTrue: 0.17, DFalse: 1.63, PNorm: 959.86, GNorm: 17.19
+[171050] Prop_KL: 36.19, 22.72, Word: 95.30, Topo: 99.54, Assm: 94.47, Log_prior_y: -3.95
+[171050] Unsup_KL: 37.41, 22.72, Word: 95.30, Topo: 99.53, Assm: 94.52, U_kld_y: 0.29
+
+[171100] Beta: 0.131, Loss: 15.82, Prop_loss: 7.35, U_loss: 6.61, YMSE: 0.19, DTrue: 0.05, DFalse: 1.61, PNorm: 959.95, GNorm: 20.85
+[171100] Prop_KL: 36.84, 23.61, Word: 95.33, Topo: 99.53, Assm: 95.68, Log_prior_y: -3.93
+[171100] Unsup_KL: 37.28, 23.46, Word: 95.05, Topo: 99.36, Assm: 95.50, U_kld_y: 0.29
+
+[171150] Beta: 0.131, Loss: 16.26, Prop_loss: 7.34, U_loss: 6.59, YMSE: 0.20, DTrue: 0.12, DFalse: 2.00, PNorm: 960.05, GNorm: 50.00
+[171150] Prop_KL: 37.04, 23.44, Word: 95.69, Topo: 99.56, Assm: 95.82, Log_prior_y: -4.02
+[171150] Unsup_KL: 37.81, 23.20, Word: 95.20, Topo: 99.50, Assm: 95.55, U_kld_y: 0.30
+
+[171200] Beta: 0.131, Loss: 15.10, Prop_loss: 7.22, U_loss: 6.54, YMSE: 0.19, DTrue: 0.19, DFalse: 0.96, PNorm: 960.14, GNorm: 18.22
+[171200] Prop_KL: 36.99, 22.83, Word: 95.61, Topo: 99.49, Assm: 96.18, Log_prior_y: -3.96
+[171200] Unsup_KL: 37.80, 22.86, Word: 95.43, Topo: 99.49, Assm: 94.96, U_kld_y: 0.28
+
+[171250] Beta: 0.131, Loss: 16.21, Prop_loss: 7.37, U_loss: 6.46, YMSE: 0.20, DTrue: 0.37, DFalse: 1.82, PNorm: 960.27, GNorm: 15.05
+[171250] Prop_KL: 37.03, 22.11, Word: 95.47, Topo: 99.46, Assm: 95.00, Log_prior_y: -4.04
+[171250] Unsup_KL: 37.12, 22.23, Word: 95.33, Topo: 99.42, Assm: 95.49, U_kld_y: 0.33
+
+[171300] Beta: 0.131, Loss: 16.48, Prop_loss: 7.28, U_loss: 6.45, YMSE: 0.19, DTrue: 0.25, DFalse: 2.30, PNorm: 960.37, GNorm: 15.33
+[171300] Prop_KL: 36.78, 22.81, Word: 95.18, Topo: 99.52, Assm: 96.37, Log_prior_y: -3.98
+[171300] Unsup_KL: 37.28, 22.75, Word: 95.48, Topo: 99.42, Assm: 95.47, U_kld_y: 0.30
+
+[171350] Beta: 0.131, Loss: 14.39, Prop_loss: 7.37, U_loss: 6.39, YMSE: 0.19, DTrue: 0.16, DFalse: 0.28, PNorm: 960.47, GNorm: 17.12
+[171350] Prop_KL: 36.95, 22.56, Word: 95.26, Topo: 99.50, Assm: 96.15, Log_prior_y: -3.99
+[171350] Unsup_KL: 37.06, 22.46, Word: 95.48, Topo: 99.49, Assm: 94.99, U_kld_y: 0.32
+
+[171400] Beta: 0.131, Loss: 15.46, Prop_loss: 7.41, U_loss: 6.60, YMSE: 0.19, DTrue: 0.08, DFalse: 1.18, PNorm: 960.60, GNorm: 17.11
+[171400] Prop_KL: 37.43, 22.33, Word: 95.42, Topo: 99.42, Assm: 95.30, Log_prior_y: -3.97
+[171400] Unsup_KL: 38.18, 22.33, Word: 94.90, Topo: 99.45, Assm: 95.26, U_kld_y: 0.31
+
+[171450] Beta: 0.131, Loss: 15.73, Prop_loss: 7.44, U_loss: 6.49, YMSE: 0.21, DTrue: 0.15, DFalse: 1.45, PNorm: 960.72, GNorm: 16.49
+[171450] Prop_KL: 37.32, 22.82, Word: 95.52, Topo: 99.57, Assm: 95.03, Log_prior_y: -4.05
+[171450] Unsup_KL: 37.55, 22.81, Word: 95.18, Topo: 99.59, Assm: 94.92, U_kld_y: 0.30
+
+[171500] Beta: 0.131, Loss: 16.23, Prop_loss: 7.52, U_loss: 6.46, YMSE: 0.21, DTrue: 0.23, DFalse: 1.82, PNorm: 960.82, GNorm: 18.50
+[171500] Prop_KL: 37.06, 23.25, Word: 95.26, Topo: 99.44, Assm: 95.66, Log_prior_y: -4.06
+[171500] Unsup_KL: 37.04, 23.39, Word: 95.52, Topo: 99.50, Assm: 94.61, U_kld_y: 0.29
+
+[171550] Beta: 0.131, Loss: 14.39, Prop_loss: 7.27, U_loss: 6.50, YMSE: 0.20, DTrue: 0.08, DFalse: 0.33, PNorm: 960.94, GNorm: 28.83
+[171550] Prop_KL: 36.50, 22.76, Word: 95.36, Topo: 99.49, Assm: 96.47, Log_prior_y: -3.94
+[171550] Unsup_KL: 37.38, 22.88, Word: 95.40, Topo: 99.48, Assm: 94.84, U_kld_y: 0.31
+
+[171600] Beta: 0.131, Loss: 15.31, Prop_loss: 7.18, U_loss: 6.44, YMSE: 0.19, DTrue: 0.12, DFalse: 1.39, PNorm: 961.05, GNorm: 15.87
+[171600] Prop_KL: 36.35, 22.33, Word: 95.91, Topo: 99.42, Assm: 95.84, Log_prior_y: -3.94
+[171600] Unsup_KL: 37.19, 22.36, Word: 95.73, Topo: 99.51, Assm: 95.41, U_kld_y: 0.34
+
+[171650] Beta: 0.131, Loss: 15.88, Prop_loss: 7.13, U_loss: 6.49, YMSE: 0.19, DTrue: 0.10, DFalse: 1.97, PNorm: 961.14, GNorm: 20.23
+[171650] Prop_KL: 36.79, 21.45, Word: 95.64, Topo: 99.52, Assm: 96.00, Log_prior_y: -3.88
+[171650] Unsup_KL: 37.80, 21.38, Word: 95.10, Topo: 99.46, Assm: 95.33, U_kld_y: 0.29
+
+[171700] Beta: 0.131, Loss: 15.15, Prop_loss: 7.14, U_loss: 6.38, YMSE: 0.19, DTrue: 0.09, DFalse: 1.35, PNorm: 961.24, GNorm: 20.97
+[171700] Prop_KL: 36.50, 20.92, Word: 95.56, Topo: 99.50, Assm: 96.04, Log_prior_y: -3.98
+[171700] Unsup_KL: 37.00, 20.96, Word: 94.98, Topo: 99.54, Assm: 95.28, U_kld_y: 0.30
+
+[171750] Beta: 0.131, Loss: 15.84, Prop_loss: 7.32, U_loss: 6.50, YMSE: 0.19, DTrue: 0.13, DFalse: 1.70, PNorm: 961.34, GNorm: 23.63
+[171750] Prop_KL: 36.86, 21.85, Word: 95.46, Topo: 99.55, Assm: 95.08, Log_prior_y: -3.99
+[171750] Unsup_KL: 37.81, 21.97, Word: 95.41, Topo: 99.45, Assm: 95.49, U_kld_y: 0.30
+
+fn  zinc310k-processed/frac0.5/prop-tensors-8.pkl zinc310k-processed/frac0.5/u-tensors-9.pkl
+Before load
+Loaded
+[171800] Beta: 0.131, Loss: 17.54, Prop_loss: 7.39, U_loss: 6.45, YMSE: 0.21, DTrue: 0.19, DFalse: 3.30, PNorm: 961.45, GNorm: 20.18
+[171800] Prop_KL: 36.69, 23.14, Word: 95.62, Topo: 99.52, Assm: 94.86, Log_prior_y: -4.00
+[171800] Unsup_KL: 37.51, 23.10, Word: 95.69, Topo: 99.49, Assm: 94.62, U_kld_y: 0.31
+
+[171850] Beta: 0.131, Loss: 14.93, Prop_loss: 7.36, U_loss: 6.57, YMSE: 0.21, DTrue: 0.11, DFalse: 0.68, PNorm: 961.55, GNorm: 19.31
+[171850] Prop_KL: 36.79, 23.06, Word: 95.53, Topo: 99.51, Assm: 95.47, Log_prior_y: -4.01
+[171850] Unsup_KL: 37.25, 23.04, Word: 95.17, Topo: 99.45, Assm: 94.64, U_kld_y: 0.31
+
+[171900] Beta: 0.131, Loss: 15.53, Prop_loss: 7.36, U_loss: 6.52, YMSE: 0.22, DTrue: 0.14, DFalse: 1.30, PNorm: 961.65, GNorm: 21.27
+[171900] Prop_KL: 37.41, 22.22, Word: 95.62, Topo: 99.50, Assm: 96.03, Log_prior_y: -4.01
+[171900] Unsup_KL: 37.52, 22.38, Word: 94.97, Topo: 99.40, Assm: 95.99, U_kld_y: 0.31
+
+[171950] Beta: 0.131, Loss: 15.18, Prop_loss: 7.33, U_loss: 6.55, YMSE: 0.20, DTrue: 0.16, DFalse: 0.94, PNorm: 961.76, GNorm: 17.76
+[171950] Prop_KL: 36.78, 22.22, Word: 95.41, Topo: 99.56, Assm: 95.65, Log_prior_y: -4.03
+[171950] Unsup_KL: 37.65, 22.31, Word: 95.05, Topo: 99.44, Assm: 95.42, U_kld_y: 0.30
+
+[172000] Beta: 0.131, Loss: 14.68, Prop_loss: 7.35, U_loss: 6.51, YMSE: 0.19, DTrue: 0.07, DFalse: 0.57, PNorm: 961.87, GNorm: 17.32
+[172000] Prop_KL: 37.11, 22.55, Word: 95.32, Topo: 99.52, Assm: 95.53, Log_prior_y: -4.00
+[172000] Unsup_KL: 37.74, 22.68, Word: 95.34, Topo: 99.41, Assm: 95.83, U_kld_y: 0.32
+
+[172050] Beta: 0.132, Loss: 15.47, Prop_loss: 7.43, U_loss: 6.43, YMSE: 0.21, DTrue: 0.13, DFalse: 1.28, PNorm: 961.98, GNorm: 14.65
+[172050] Prop_KL: 36.68, 22.30, Word: 94.79, Topo: 99.48, Assm: 95.54, Log_prior_y: -4.03
+[172050] Unsup_KL: 37.36, 22.37, Word: 95.39, Topo: 99.55, Assm: 96.26, U_kld_y: 0.29
+
+[172100] Beta: 0.132, Loss: 15.71, Prop_loss: 7.34, U_loss: 6.51, YMSE: 0.19, DTrue: 0.16, DFalse: 1.51, PNorm: 962.08, GNorm: 36.32
+[172100] Prop_KL: 36.63, 22.04, Word: 95.40, Topo: 99.51, Assm: 96.18, Log_prior_y: -4.04
+[172100] Unsup_KL: 37.12, 22.00, Word: 95.19, Topo: 99.46, Assm: 95.39, U_kld_y: 0.32
+
+[172150] Beta: 0.132, Loss: 15.73, Prop_loss: 7.42, U_loss: 6.51, YMSE: 0.20, DTrue: 0.11, DFalse: 1.49, PNorm: 962.18, GNorm: 20.60
+[172150] Prop_KL: 36.85, 22.63, Word: 95.42, Topo: 99.51, Assm: 95.11, Log_prior_y: -3.97
+[172150] Unsup_KL: 37.41, 22.62, Word: 95.28, Topo: 99.59, Assm: 95.04, U_kld_y: 0.29
+
+[172200] Beta: 0.132, Loss: 15.68, Prop_loss: 7.36, U_loss: 6.33, YMSE: 0.20, DTrue: 0.13, DFalse: 1.67, PNorm: 962.29, GNorm: 50.00
+[172200] Prop_KL: 36.78, 22.19, Word: 95.41, Topo: 99.50, Assm: 95.17, Log_prior_y: -4.00
+[172200] Unsup_KL: 36.93, 22.19, Word: 95.52, Topo: 99.49, Assm: 95.99, U_kld_y: 0.29
+
+[172250] Beta: 0.132, Loss: 15.37, Prop_loss: 7.29, U_loss: 6.54, YMSE: 0.20, DTrue: 0.12, DFalse: 1.21, PNorm: 962.40, GNorm: 18.42
+[172250] Prop_KL: 36.83, 22.35, Word: 95.69, Topo: 99.50, Assm: 94.68, Log_prior_y: -3.90
+[172250] Unsup_KL: 37.37, 22.43, Word: 95.06, Topo: 99.47, Assm: 95.78, U_kld_y: 0.34
+
+[172300] Beta: 0.132, Loss: 16.17, Prop_loss: 7.41, U_loss: 6.66, YMSE: 0.20, DTrue: 0.15, DFalse: 1.75, PNorm: 962.50, GNorm: 27.34
+[172300] Prop_KL: 36.50, 23.94, Word: 95.38, Topo: 99.51, Assm: 94.98, Log_prior_y: -3.94
+[172300] Unsup_KL: 37.09, 24.03, Word: 95.00, Topo: 99.35, Assm: 95.22, U_kld_y: 0.32
+
+[172350] Beta: 0.132, Loss: 14.56, Prop_loss: 7.45, U_loss: 6.51, YMSE: 0.20, DTrue: 0.10, DFalse: 0.30, PNorm: 962.60, GNorm: 50.00
+[172350] Prop_KL: 36.87, 23.65, Word: 95.33, Topo: 99.47, Assm: 95.74, Log_prior_y: -3.97
+[172350] Unsup_KL: 37.38, 23.84, Word: 95.39, Topo: 99.52, Assm: 95.82, U_kld_y: 0.33
+
+[172400] Beta: 0.132, Loss: 14.45, Prop_loss: 7.37, U_loss: 6.43, YMSE: 0.19, DTrue: 0.10, DFalse: 0.36, PNorm: 962.71, GNorm: 19.81
+[172400] Prop_KL: 37.13, 22.49, Word: 95.38, Topo: 99.56, Assm: 96.16, Log_prior_y: -4.00
+[172400] Unsup_KL: 37.64, 22.49, Word: 95.32, Topo: 99.49, Assm: 96.22, U_kld_y: 0.29
+
+[172450] Beta: 0.132, Loss: 15.48, Prop_loss: 7.45, U_loss: 6.43, YMSE: 0.19, DTrue: 0.14, DFalse: 1.27, PNorm: 962.82, GNorm: 18.84
+[172450] Prop_KL: 37.68, 21.63, Word: 95.71, Topo: 99.40, Assm: 95.71, Log_prior_y: -4.02
+[172450] Unsup_KL: 37.70, 21.64, Word: 95.09, Topo: 99.56, Assm: 95.42, U_kld_y: 0.30
+
+[172500] Beta: 0.132, Loss: 17.10, Prop_loss: 7.35, U_loss: 6.64, YMSE: 0.19, DTrue: 0.13, DFalse: 2.79, PNorm: 962.93, GNorm: 50.00
+[172500] Prop_KL: 37.08, 22.68, Word: 95.49, Topo: 99.47, Assm: 95.34, Log_prior_y: -3.93
+[172500] Unsup_KL: 37.71, 22.67, Word: 94.85, Topo: 99.49, Assm: 95.30, U_kld_y: 0.30
+
+[172550] Beta: 0.132, Loss: 14.73, Prop_loss: 7.46, U_loss: 6.50, YMSE: 0.19, DTrue: 0.13, DFalse: 0.45, PNorm: 963.05, GNorm: 18.86
+[172550] Prop_KL: 37.27, 22.91, Word: 95.16, Topo: 99.40, Assm: 95.71, Log_prior_y: -3.94
+[172550] Unsup_KL: 38.09, 22.86, Word: 95.28, Topo: 99.44, Assm: 96.23, U_kld_y: 0.30
+
+[172600] Beta: 0.132, Loss: 14.35, Prop_loss: 7.27, U_loss: 6.42, YMSE: 0.18, DTrue: 0.10, DFalse: 0.38, PNorm: 963.15, GNorm: 24.42
+[172600] Prop_KL: 36.84, 21.39, Word: 95.60, Topo: 99.55, Assm: 95.43, Log_prior_y: -3.91
+[172600] Unsup_KL: 37.41, 21.50, Word: 95.24, Topo: 99.45, Assm: 95.67, U_kld_y: 0.29
+
+[172650] Beta: 0.132, Loss: 14.98, Prop_loss: 7.30, U_loss: 6.46, YMSE: 0.19, DTrue: 0.10, DFalse: 0.92, PNorm: 963.26, GNorm: 14.66
+[172650] Prop_KL: 36.18, 21.55, Word: 95.39, Topo: 99.42, Assm: 95.27, Log_prior_y: -4.06
+[172650] Unsup_KL: 37.15, 21.48, Word: 95.64, Topo: 99.42, Assm: 94.71, U_kld_y: 0.33
+
+fn  zinc310k-processed/frac0.5/prop-tensors-9.pkl zinc310k-processed/frac0.5/u-tensors-8.pkl
+Before load
+Loaded
+[172700] Beta: 0.132, Loss: 15.30, Prop_loss: 7.34, U_loss: 6.51, YMSE: 0.19, DTrue: 0.12, DFalse: 1.14, PNorm: 963.39, GNorm: 50.00
+[172700] Prop_KL: 36.79, 21.75, Word: 95.55, Topo: 99.47, Assm: 94.82, Log_prior_y: -3.99
+[172700] Unsup_KL: 37.62, 21.82, Word: 95.31, Topo: 99.45, Assm: 94.54, U_kld_y: 0.31
+
+[172750] Beta: 0.132, Loss: 15.49, Prop_loss: 7.43, U_loss: 6.54, YMSE: 0.19, DTrue: 0.18, DFalse: 1.15, PNorm: 963.49, GNorm: 20.28
+[172750] Prop_KL: 37.04, 22.45, Word: 95.60, Topo: 99.44, Assm: 94.70, Log_prior_y: -3.92
+[172750] Unsup_KL: 37.08, 22.50, Word: 94.94, Topo: 99.48, Assm: 94.46, U_kld_y: 0.30
+
+[172800] Beta: 0.132, Loss: 14.85, Prop_loss: 7.27, U_loss: 6.44, YMSE: 0.21, DTrue: 0.10, DFalse: 0.82, PNorm: 963.59, GNorm: 25.41
+[172800] Prop_KL: 36.62, 21.86, Word: 95.46, Topo: 99.55, Assm: 96.00, Log_prior_y: -3.99
+[172800] Unsup_KL: 37.38, 21.97, Word: 95.36, Topo: 99.53, Assm: 95.62, U_kld_y: 0.31
+
+[172850] Beta: 0.132, Loss: 16.17, Prop_loss: 7.25, U_loss: 6.49, YMSE: 0.20, DTrue: 0.11, DFalse: 2.12, PNorm: 963.67, GNorm: 18.59
+[172850] Prop_KL: 36.22, 22.16, Word: 95.86, Topo: 99.45, Assm: 94.59, Log_prior_y: -3.98
+[172850] Unsup_KL: 37.31, 22.15, Word: 95.26, Topo: 99.52, Assm: 95.06, U_kld_y: 0.30
+
+[172900] Beta: 0.132, Loss: 15.47, Prop_loss: 7.39, U_loss: 6.52, YMSE: 0.18, DTrue: 0.12, DFalse: 1.26, PNorm: 963.77, GNorm: 16.20
+[172900] Prop_KL: 36.63, 22.85, Word: 95.44, Topo: 99.51, Assm: 95.09, Log_prior_y: -3.95
+[172900] Unsup_KL: 37.31, 22.83, Word: 95.13, Topo: 99.42, Assm: 95.84, U_kld_y: 0.34
+
+[172950] Beta: 0.132, Loss: 16.61, Prop_loss: 7.30, U_loss: 6.71, YMSE: 0.19, DTrue: 0.17, DFalse: 2.24, PNorm: 963.87, GNorm: 20.43
+[172950] Prop_KL: 36.69, 22.73, Word: 95.63, Topo: 99.49, Assm: 95.20, Log_prior_y: -3.91
+[172950] Unsup_KL: 37.75, 22.74, Word: 95.25, Topo: 99.31, Assm: 93.99, U_kld_y: 0.33
+
+[173000] Beta: 0.132, Loss: 16.71, Prop_loss: 7.44, U_loss: 6.61, YMSE: 0.20, DTrue: 0.14, DFalse: 2.32, PNorm: 963.95, GNorm: 15.26
+[173000] Prop_KL: 37.04, 22.86, Word: 95.25, Topo: 99.55, Assm: 94.62, Log_prior_y: -3.97
+[173000] Unsup_KL: 37.90, 22.90, Word: 95.50, Topo: 99.49, Assm: 94.16, U_kld_y: 0.32
+
+[173050] Beta: 0.133, Loss: 17.09, Prop_loss: 7.43, U_loss: 6.72, YMSE: 0.20, DTrue: 0.43, DFalse: 2.30, PNorm: 964.05, GNorm: 50.00
+[173050] Prop_KL: 36.99, 22.36, Word: 95.66, Topo: 99.57, Assm: 94.00, Log_prior_y: -3.94
+[173050] Unsup_KL: 37.72, 22.29, Word: 95.11, Topo: 99.41, Assm: 94.12, U_kld_y: 0.32
+
+[173100] Beta: 0.133, Loss: 15.20, Prop_loss: 7.44, U_loss: 6.56, YMSE: 0.19, DTrue: 0.10, DFalse: 0.92, PNorm: 964.15, GNorm: 16.75
+[173100] Prop_KL: 36.54, 22.76, Word: 95.22, Topo: 99.54, Assm: 95.04, Log_prior_y: -3.99
+[173100] Unsup_KL: 37.60, 22.73, Word: 95.41, Topo: 99.42, Assm: 94.77, U_kld_y: 0.28
+
+[173150] Beta: 0.133, Loss: 15.51, Prop_loss: 7.36, U_loss: 6.45, YMSE: 0.19, DTrue: 0.11, DFalse: 1.40, PNorm: 964.24, GNorm: 21.65
+[173150] Prop_KL: 36.66, 22.00, Word: 94.90, Topo: 99.54, Assm: 95.74, Log_prior_y: -3.93
+[173150] Unsup_KL: 37.03, 22.01, Word: 95.05, Topo: 99.46, Assm: 95.61, U_kld_y: 0.34
+
+[173200] Beta: 0.133, Loss: 14.94, Prop_loss: 7.29, U_loss: 6.50, YMSE: 0.19, DTrue: 0.14, DFalse: 0.81, PNorm: 964.35, GNorm: 16.05
+[173200] Prop_KL: 36.89, 22.08, Word: 95.66, Topo: 99.50, Assm: 95.69, Log_prior_y: -4.00
+[173200] Unsup_KL: 37.25, 22.04, Word: 95.13, Topo: 99.54, Assm: 95.57, U_kld_y: 0.33
+
+[173250] Beta: 0.133, Loss: 17.21, Prop_loss: 7.40, U_loss: 6.45, YMSE: 0.20, DTrue: 0.09, DFalse: 3.07, PNorm: 964.46, GNorm: 20.71
+[173250] Prop_KL: 36.31, 22.44, Word: 95.27, Topo: 99.50, Assm: 95.53, Log_prior_y: -4.04
+[173250] Unsup_KL: 37.30, 22.51, Word: 95.50, Topo: 99.53, Assm: 95.57, U_kld_y: 0.31
+
+[173300] Beta: 0.133, Loss: 16.13, Prop_loss: 7.34, U_loss: 6.49, YMSE: 0.19, DTrue: 0.11, DFalse: 2.01, PNorm: 964.56, GNorm: 19.24
+[173300] Prop_KL: 36.54, 21.75, Word: 95.57, Topo: 99.44, Assm: 95.09, Log_prior_y: -3.95
+[173300] Unsup_KL: 36.86, 21.83, Word: 95.15, Topo: 99.38, Assm: 94.97, U_kld_y: 0.28
+
+[173350] Beta: 0.133, Loss: 15.89, Prop_loss: 7.37, U_loss: 6.47, YMSE: 0.19, DTrue: 0.16, DFalse: 1.70, PNorm: 964.66, GNorm: 18.03
+[173350] Prop_KL: 36.30, 21.94, Word: 95.35, Topo: 99.47, Assm: 95.73, Log_prior_y: -3.96
+[173350] Unsup_KL: 36.72, 22.03, Word: 95.36, Topo: 99.44, Assm: 95.50, U_kld_y: 0.32
+
+[173400] Beta: 0.133, Loss: 14.55, Prop_loss: 7.23, U_loss: 6.42, YMSE: 0.20, DTrue: 0.08, DFalse: 0.62, PNorm: 964.75, GNorm: 13.28
+[173400] Prop_KL: 36.32, 22.06, Word: 95.64, Topo: 99.55, Assm: 95.55, Log_prior_y: -3.95
+[173400] Unsup_KL: 37.15, 21.99, Word: 95.37, Topo: 99.44, Assm: 95.21, U_kld_y: 0.31
+
+[173450] Beta: 0.133, Loss: 16.84, Prop_loss: 7.46, U_loss: 6.52, YMSE: 0.18, DTrue: 0.17, DFalse: 2.51, PNorm: 964.86, GNorm: 27.92
+[173450] Prop_KL: 36.73, 21.99, Word: 95.22, Topo: 99.38, Assm: 95.95, Log_prior_y: -3.98
+[173450] Unsup_KL: 37.19, 22.08, Word: 95.14, Topo: 99.53, Assm: 95.37, U_kld_y: 0.35
+
+[173500] Beta: 0.133, Loss: 15.35, Prop_loss: 7.45, U_loss: 6.47, YMSE: 0.18, DTrue: 0.16, DFalse: 1.09, PNorm: 964.96, GNorm: 14.99
+[173500] Prop_KL: 37.14, 22.51, Word: 95.41, Topo: 99.57, Assm: 95.52, Log_prior_y: -3.99
+[173500] Unsup_KL: 37.48, 22.56, Word: 95.57, Topo: 99.51, Assm: 96.30, U_kld_y: 0.32
+
+[173550] Beta: 0.133, Loss: 15.81, Prop_loss: 7.47, U_loss: 6.60, YMSE: 0.20, DTrue: 0.08, DFalse: 1.45, PNorm: 965.07, GNorm: 17.77
+[173550] Prop_KL: 37.10, 22.47, Word: 95.37, Topo: 99.48, Assm: 95.49, Log_prior_y: -4.06
+[173550] Unsup_KL: 37.47, 22.48, Word: 94.97, Topo: 99.47, Assm: 95.61, U_kld_y: 0.33
+
+fn  zinc310k-processed/frac0.5/prop-tensors-7.pkl zinc310k-processed/frac0.5/u-tensors-6.pkl
+Before load
+Loaded
+[173600] Beta: 0.133, Loss: 15.28, Prop_loss: 7.38, U_loss: 6.52, YMSE: 0.22, DTrue: 0.13, DFalse: 1.04, PNorm: 965.19, GNorm: 20.29
+[173600] Prop_KL: 36.60, 22.44, Word: 95.11, Topo: 99.48, Assm: 95.81, Log_prior_y: -3.96
+[173600] Unsup_KL: 37.16, 22.44, Word: 95.35, Topo: 99.47, Assm: 95.26, U_kld_y: 0.31
+
+[173650] Beta: 0.133, Loss: 14.78, Prop_loss: 7.39, U_loss: 6.54, YMSE: 0.21, DTrue: 0.30, DFalse: 0.34, PNorm: 965.30, GNorm: 50.00
+[173650] Prop_KL: 36.40, 21.78, Word: 95.11, Topo: 99.51, Assm: 95.56, Log_prior_y: -3.96
+[173650] Unsup_KL: 37.01, 21.88, Word: 94.99, Topo: 99.50, Assm: 95.46, U_kld_y: 0.32
+
+[173700] Beta: 0.133, Loss: 16.74, Prop_loss: 7.32, U_loss: 6.50, YMSE: 0.19, DTrue: 0.13, DFalse: 2.61, PNorm: 965.40, GNorm: 17.57
+[173700] Prop_KL: 37.13, 21.73, Word: 95.37, Topo: 99.50, Assm: 95.75, Log_prior_y: -3.88
+[173700] Unsup_KL: 37.91, 21.72, Word: 95.19, Topo: 99.47, Assm: 96.73, U_kld_y: 0.28
+
+[173750] Beta: 0.133, Loss: 15.64, Prop_loss: 7.22, U_loss: 6.47, YMSE: 0.18, DTrue: 0.11, DFalse: 1.66, PNorm: 965.48, GNorm: 18.64
+[173750] Prop_KL: 36.34, 21.84, Word: 95.83, Topo: 99.49, Assm: 96.04, Log_prior_y: -3.95
+[173750] Unsup_KL: 37.40, 21.82, Word: 95.14, Topo: 99.51, Assm: 95.69, U_kld_y: 0.32
+
+[173800] Beta: 0.133, Loss: 15.50, Prop_loss: 7.37, U_loss: 6.52, YMSE: 0.18, DTrue: 0.20, DFalse: 1.23, PNorm: 965.58, GNorm: 38.51
+[173800] Prop_KL: 36.94, 21.68, Word: 94.94, Topo: 99.39, Assm: 95.10, Log_prior_y: -3.96
+[173800] Unsup_KL: 37.32, 21.79, Word: 95.13, Topo: 99.56, Assm: 95.50, U_kld_y: 0.32
+
+[173850] Beta: 0.133, Loss: 16.82, Prop_loss: 7.27, U_loss: 6.46, YMSE: 0.19, DTrue: 0.13, DFalse: 2.77, PNorm: 965.66, GNorm: 50.00
+[173850] Prop_KL: 36.87, 21.49, Word: 95.65, Topo: 99.52, Assm: 95.59, Log_prior_y: -3.93
+[173850] Unsup_KL: 37.14, 21.43, Word: 95.10, Topo: 99.52, Assm: 95.67, U_kld_y: 0.31
+
+[173900] Beta: 0.133, Loss: 15.77, Prop_loss: 7.47, U_loss: 6.66, YMSE: 0.20, DTrue: 0.16, DFalse: 1.28, PNorm: 965.75, GNorm: 17.53
+[173900] Prop_KL: 36.95, 22.76, Word: 95.34, Topo: 99.48, Assm: 94.62, Log_prior_y: -3.96
+[173900] Unsup_KL: 37.90, 22.58, Word: 95.17, Topo: 99.50, Assm: 94.35, U_kld_y: 0.29
+
+[173950] Beta: 0.133, Loss: 15.70, Prop_loss: 7.37, U_loss: 6.68, YMSE: 0.19, DTrue: 0.08, DFalse: 1.38, PNorm: 965.85, GNorm: 20.26
+[173950] Prop_KL: 36.61, 23.02, Word: 95.35, Topo: 99.46, Assm: 95.60, Log_prior_y: -3.91
+[173950] Unsup_KL: 37.34, 23.02, Word: 95.16, Topo: 99.47, Assm: 94.84, U_kld_y: 0.32
+
+[174000] Beta: 0.133, Loss: 14.98, Prop_loss: 7.49, U_loss: 6.64, YMSE: 0.20, DTrue: 0.10, DFalse: 0.54, PNorm: 965.97, GNorm: 16.59
+[174000] Prop_KL: 37.01, 22.78, Word: 95.50, Topo: 99.51, Assm: 95.64, Log_prior_y: -4.04
+[174000] Unsup_KL: 37.94, 22.83, Word: 95.33, Topo: 99.50, Assm: 95.13, U_kld_y: 0.31
+
+[174050] Beta: 0.134, Loss: 15.14, Prop_loss: 7.43, U_loss: 6.50, YMSE: 0.20, DTrue: 0.11, DFalse: 0.90, PNorm: 966.07, GNorm: 19.31
+[174050] Prop_KL: 36.71, 22.31, Word: 95.10, Topo: 99.54, Assm: 95.30, Log_prior_y: -3.98
+[174050] Unsup_KL: 36.98, 22.32, Word: 95.23, Topo: 99.47, Assm: 96.19, U_kld_y: 0.32
+
+[174100] Beta: 0.134, Loss: 14.47, Prop_loss: 7.41, U_loss: 6.52, YMSE: 0.20, DTrue: 0.09, DFalse: 0.25, PNorm: 966.19, GNorm: 17.70
+[174100] Prop_KL: 37.14, 21.93, Word: 95.50, Topo: 99.43, Assm: 95.36, Log_prior_y: -3.96
+[174100] Unsup_KL: 37.44, 22.00, Word: 95.35, Topo: 99.46, Assm: 95.72, U_kld_y: 0.33
+
+[174150] Beta: 0.134, Loss: 16.00, Prop_loss: 7.35, U_loss: 6.52, YMSE: 0.20, DTrue: 0.11, DFalse: 1.81, PNorm: 966.28, GNorm: 17.64
+[174150] Prop_KL: 37.03, 21.35, Word: 95.58, Topo: 99.50, Assm: 95.05, Log_prior_y: -3.95
+[174150] Unsup_KL: 37.23, 21.40, Word: 95.22, Topo: 99.44, Assm: 94.58, U_kld_y: 0.30
+
+[174200] Beta: 0.134, Loss: 15.91, Prop_loss: 7.47, U_loss: 6.49, YMSE: 0.18, DTrue: 0.17, DFalse: 1.59, PNorm: 966.38, GNorm: 18.89
+[174200] Prop_KL: 36.75, 21.67, Word: 94.92, Topo: 99.44, Assm: 94.53, Log_prior_y: -3.97
+[174200] Unsup_KL: 37.65, 21.69, Word: 95.18, Topo: 99.34, Assm: 94.79, U_kld_y: 0.30
+
+[174250] Beta: 0.134, Loss: 16.05, Prop_loss: 7.38, U_loss: 6.51, YMSE: 0.20, DTrue: 0.09, DFalse: 1.86, PNorm: 966.48, GNorm: 29.77
+[174250] Prop_KL: 36.74, 22.11, Word: 95.14, Topo: 99.50, Assm: 95.42, Log_prior_y: -3.94
+[174250] Unsup_KL: 37.37, 21.98, Word: 95.32, Topo: 99.59, Assm: 94.97, U_kld_y: 0.30
+
+[174300] Beta: 0.134, Loss: 15.51, Prop_loss: 7.34, U_loss: 6.58, YMSE: 0.19, DTrue: 0.11, DFalse: 1.29, PNorm: 966.58, GNorm: 16.22
+[174300] Prop_KL: 36.39, 21.91, Word: 95.36, Topo: 99.52, Assm: 95.41, Log_prior_y: -3.95
+[174300] Unsup_KL: 37.46, 21.92, Word: 95.25, Topo: 99.59, Assm: 94.91, U_kld_y: 0.33
+
+[174350] Beta: 0.134, Loss: 17.15, Prop_loss: 7.27, U_loss: 6.51, YMSE: 0.21, DTrue: 0.22, DFalse: 2.94, PNorm: 966.68, GNorm: 50.00
+[174350] Prop_KL: 35.72, 22.51, Word: 95.54, Topo: 99.54, Assm: 95.74, Log_prior_y: -3.97
+[174350] Unsup_KL: 36.40, 22.48, Word: 95.12, Topo: 99.53, Assm: 95.54, U_kld_y: 0.34
+
+[174400] Beta: 0.134, Loss: 14.73, Prop_loss: 7.54, U_loss: 6.57, YMSE: 0.19, DTrue: 0.11, DFalse: 0.33, PNorm: 966.77, GNorm: 14.70
+[174400] Prop_KL: 36.75, 22.56, Word: 94.79, Topo: 99.55, Assm: 95.35, Log_prior_y: -3.97
+[174400] Unsup_KL: 37.47, 22.49, Word: 95.34, Topo: 99.47, Assm: 95.18, U_kld_y: 0.32
+
+[174450] Beta: 0.134, Loss: 14.52, Prop_loss: 7.35, U_loss: 6.53, YMSE: 0.19, DTrue: 0.08, DFalse: 0.37, PNorm: 966.88, GNorm: 15.48
+[174450] Prop_KL: 36.36, 21.58, Word: 95.42, Topo: 99.41, Assm: 95.41, Log_prior_y: -4.01
+[174450] Unsup_KL: 37.13, 21.58, Word: 95.08, Topo: 99.54, Assm: 95.24, U_kld_y: 0.31
+
+fn  zinc310k-processed/frac0.5/prop-tensors-0.pkl zinc310k-processed/frac0.5/u-tensors-1.pkl
+Before load
+Loaded
+[174500] Beta: 0.134, Loss: 18.23, Prop_loss: 7.31, U_loss: 6.48, YMSE: 0.19, DTrue: 0.18, DFalse: 4.08, PNorm: 966.99, GNorm: 19.72
+[174500] Prop_KL: 36.79, 20.89, Word: 95.63, Topo: 99.50, Assm: 95.12, Log_prior_y: -3.92
+[174500] Unsup_KL: 36.84, 20.82, Word: 95.35, Topo: 99.49, Assm: 95.37, U_kld_y: 0.31
+
+[174550] Beta: 0.134, Loss: 15.96, Prop_loss: 7.39, U_loss: 6.66, YMSE: 0.18, DTrue: 0.18, DFalse: 1.54, PNorm: 967.08, GNorm: 28.02
+[174550] Prop_KL: 36.52, 22.09, Word: 95.28, Topo: 99.50, Assm: 95.36, Log_prior_y: -3.99
+[174550] Unsup_KL: 37.20, 22.14, Word: 95.13, Topo: 99.41, Assm: 94.27, U_kld_y: 0.35
+
+[174600] Beta: 0.134, Loss: 15.67, Prop_loss: 7.33, U_loss: 6.51, YMSE: 0.18, DTrue: 0.13, DFalse: 1.52, PNorm: 967.18, GNorm: 21.24
+[174600] Prop_KL: 36.28, 21.87, Word: 95.69, Topo: 99.45, Assm: 95.51, Log_prior_y: -3.92
+[174600] Unsup_KL: 37.10, 21.97, Word: 95.14, Topo: 99.50, Assm: 95.21, U_kld_y: 0.31
+
+[174650] Beta: 0.134, Loss: 14.86, Prop_loss: 7.33, U_loss: 6.43, YMSE: 0.20, DTrue: 0.13, DFalse: 0.77, PNorm: 967.26, GNorm: 20.88
+[174650] Prop_KL: 36.18, 21.42, Word: 95.53, Topo: 99.53, Assm: 95.04, Log_prior_y: -3.99
+[174650] Unsup_KL: 36.55, 21.40, Word: 95.18, Topo: 99.54, Assm: 95.92, U_kld_y: 0.31
+
+[174700] Beta: 0.134, Loss: 14.56, Prop_loss: 7.42, U_loss: 6.54, YMSE: 0.19, DTrue: 0.10, DFalse: 0.31, PNorm: 967.37, GNorm: 48.39
+[174700] Prop_KL: 37.20, 21.57, Word: 95.62, Topo: 99.49, Assm: 95.14, Log_prior_y: -4.00
+[174700] Unsup_KL: 37.12, 21.66, Word: 95.27, Topo: 99.46, Assm: 94.54, U_kld_y: 0.31
+
+[174750] Beta: 0.134, Loss: 17.19, Prop_loss: 7.28, U_loss: 6.58, YMSE: 0.18, DTrue: 0.11, DFalse: 3.04, PNorm: 967.49, GNorm: 50.00
+[174750] Prop_KL: 36.16, 21.55, Word: 95.80, Topo: 99.46, Assm: 95.45, Log_prior_y: -4.08
+[174750] Unsup_KL: 37.25, 21.52, Word: 94.95, Topo: 99.51, Assm: 94.89, U_kld_y: 0.33
+
+[174800] Beta: 0.134, Loss: 14.80, Prop_loss: 7.21, U_loss: 6.44, YMSE: 0.18, DTrue: 0.10, DFalse: 0.87, PNorm: 967.58, GNorm: 36.55
+[174800] Prop_KL: 35.92, 20.93, Word: 95.42, Topo: 99.58, Assm: 95.88, Log_prior_y: -3.99
+[174800] Unsup_KL: 36.86, 20.92, Word: 95.32, Topo: 99.47, Assm: 95.35, U_kld_y: 0.31
+
+[174850] Beta: 0.134, Loss: 17.03, Prop_loss: 7.34, U_loss: 6.44, YMSE: 0.20, DTrue: 0.17, DFalse: 2.88, PNorm: 967.67, GNorm: 15.56
+[174850] Prop_KL: 36.39, 21.53, Word: 95.15, Topo: 99.52, Assm: 95.25, Log_prior_y: -3.87
+[174850] Unsup_KL: 36.74, 21.52, Word: 95.44, Topo: 99.54, Assm: 94.79, U_kld_y: 0.34
+
+[174900] Beta: 0.134, Loss: 16.66, Prop_loss: 7.37, U_loss: 6.73, YMSE: 0.20, DTrue: 0.13, DFalse: 2.23, PNorm: 967.76, GNorm: 18.74
+[174900] Prop_KL: 36.15, 22.12, Word: 95.21, Topo: 99.54, Assm: 95.42, Log_prior_y: -3.96
+[174900] Unsup_KL: 37.58, 22.15, Word: 94.93, Topo: 99.40, Assm: 93.86, U_kld_y: 0.30
+
+[174950] Beta: 0.134, Loss: 18.16, Prop_loss: 7.33, U_loss: 6.58, YMSE: 0.21, DTrue: 0.38, DFalse: 3.65, PNorm: 967.87, GNorm: 50.00
+[174950] Prop_KL: 36.34, 22.60, Word: 95.59, Topo: 99.55, Assm: 94.87, Log_prior_y: -3.95
+[174950] Unsup_KL: 36.82, 22.74, Word: 95.22, Topo: 99.53, Assm: 95.32, U_kld_y: 0.30
+
+[175000] Beta: 0.134, Loss: 15.05, Prop_loss: 7.37, U_loss: 6.60, YMSE: 0.20, DTrue: 0.06, DFalse: 0.82, PNorm: 967.97, GNorm: 18.41
+[175000] Prop_KL: 35.82, 24.01, Word: 95.64, Topo: 99.49, Assm: 95.67, Log_prior_y: -3.90
+[175000] Unsup_KL: 36.34, 23.98, Word: 95.31, Topo: 99.45, Assm: 95.11, U_kld_y: 0.30
+
+[175050] Beta: 0.135, Loss: 15.48, Prop_loss: 7.49, U_loss: 6.49, YMSE: 0.19, DTrue: 0.14, DFalse: 1.17, PNorm: 968.08, GNorm: 24.92
+[175050] Prop_KL: 36.36, 22.76, Word: 95.29, Topo: 99.44, Assm: 95.41, Log_prior_y: -4.00
+[175050] Unsup_KL: 36.46, 22.83, Word: 95.52, Topo: 99.55, Assm: 94.98, U_kld_y: 0.33
+
+[175100] Beta: 0.135, Loss: 15.14, Prop_loss: 7.35, U_loss: 6.48, YMSE: 0.19, DTrue: 0.10, DFalse: 1.02, PNorm: 968.16, GNorm: 17.25
+[175100] Prop_KL: 36.51, 22.31, Word: 95.70, Topo: 99.49, Assm: 95.54, Log_prior_y: -3.90
+[175100] Unsup_KL: 36.91, 22.43, Word: 95.52, Topo: 99.51, Assm: 96.44, U_kld_y: 0.29
+
+[175150] Beta: 0.135, Loss: 15.74, Prop_loss: 7.42, U_loss: 6.73, YMSE: 0.18, DTrue: 0.19, DFalse: 1.21, PNorm: 968.26, GNorm: 17.21
+[175150] Prop_KL: 36.55, 22.91, Word: 95.71, Topo: 99.48, Assm: 94.96, Log_prior_y: -3.93
+[175150] Unsup_KL: 37.37, 22.83, Word: 95.04, Topo: 99.50, Assm: 94.78, U_kld_y: 0.33
+
+[175200] Beta: 0.135, Loss: 16.81, Prop_loss: 7.49, U_loss: 6.63, YMSE: 0.21, DTrue: 0.14, DFalse: 2.34, PNorm: 968.36, GNorm: 18.01
+[175200] Prop_KL: 36.54, 23.16, Word: 95.42, Topo: 99.60, Assm: 94.91, Log_prior_y: -3.97
+[175200] Unsup_KL: 37.15, 23.16, Word: 95.42, Topo: 99.46, Assm: 95.52, U_kld_y: 0.31
+
+[175250] Beta: 0.135, Loss: 16.17, Prop_loss: 7.35, U_loss: 6.65, YMSE: 0.20, DTrue: 0.22, DFalse: 1.74, PNorm: 968.45, GNorm: 15.81
+[175250] Prop_KL: 35.93, 23.45, Word: 95.39, Topo: 99.54, Assm: 96.23, Log_prior_y: -3.95
+[175250] Unsup_KL: 36.98, 23.41, Word: 94.99, Topo: 99.49, Assm: 95.31, U_kld_y: 0.31
+
+[175300] Beta: 0.135, Loss: 15.32, Prop_loss: 7.50, U_loss: 6.56, YMSE: 0.18, DTrue: 0.10, DFalse: 0.99, PNorm: 968.54, GNorm: 50.00
+[175300] Prop_KL: 36.34, 23.05, Word: 95.20, Topo: 99.48, Assm: 95.23, Log_prior_y: -3.95
+[175300] Unsup_KL: 36.90, 23.13, Word: 95.20, Topo: 99.47, Assm: 95.58, U_kld_y: 0.29
+
+fn  zinc310k-processed/frac0.5/prop-tensors-3.pkl zinc310k-processed/frac0.5/u-tensors-2.pkl
+Before load
+Loaded
+[175350] Beta: 0.135, Loss: 15.13, Prop_loss: 7.40, U_loss: 6.52, YMSE: 0.20, DTrue: 0.11, DFalse: 0.90, PNorm: 968.67, GNorm: 18.38
+[175350] Prop_KL: 36.73, 22.86, Word: 95.30, Topo: 99.47, Assm: 95.88, Log_prior_y: -3.86
+[175350] Unsup_KL: 37.23, 22.81, Word: 95.58, Topo: 99.48, Assm: 95.83, U_kld_y: 0.31
+
+[175400] Beta: 0.135, Loss: 15.14, Prop_loss: 7.42, U_loss: 6.50, YMSE: 0.18, DTrue: 0.10, DFalse: 0.94, PNorm: 968.77, GNorm: 22.96
+[175400] Prop_KL: 36.95, 21.97, Word: 95.33, Topo: 99.49, Assm: 96.05, Log_prior_y: -3.98
+[175400] Unsup_KL: 37.39, 22.04, Word: 95.16, Topo: 99.45, Assm: 96.30, U_kld_y: 0.29
+
+[175450] Beta: 0.135, Loss: 17.19, Prop_loss: 7.28, U_loss: 6.56, YMSE: 0.19, DTrue: 0.10, DFalse: 3.06, PNorm: 968.89, GNorm: 20.11
+[175450] Prop_KL: 36.40, 21.09, Word: 95.63, Topo: 99.51, Assm: 95.52, Log_prior_y: -3.97
+[175450] Unsup_KL: 37.17, 21.29, Word: 95.02, Topo: 99.40, Assm: 95.82, U_kld_y: 0.30
+
+[175500] Beta: 0.135, Loss: 15.22, Prop_loss: 7.45, U_loss: 6.51, YMSE: 0.20, DTrue: 0.13, DFalse: 0.92, PNorm: 969.01, GNorm: 17.55
+[175500] Prop_KL: 36.66, 21.42, Word: 95.05, Topo: 99.47, Assm: 95.82, Log_prior_y: -4.02
+[175500] Unsup_KL: 37.11, 21.39, Word: 95.10, Topo: 99.50, Assm: 95.33, U_kld_y: 0.30
+
+[175550] Beta: 0.135, Loss: 15.53, Prop_loss: 7.28, U_loss: 6.46, YMSE: 0.20, DTrue: 0.12, DFalse: 1.47, PNorm: 969.12, GNorm: 19.07
+[175550] Prop_KL: 35.73, 21.26, Word: 95.69, Topo: 99.47, Assm: 95.06, Log_prior_y: -3.98
+[175550] Unsup_KL: 35.97, 21.28, Word: 94.86, Topo: 99.47, Assm: 95.03, U_kld_y: 0.30
+
+[175600] Beta: 0.135, Loss: 16.30, Prop_loss: 7.34, U_loss: 6.54, YMSE: 0.20, DTrue: 0.22, DFalse: 2.00, PNorm: 969.23, GNorm: 17.81
+[175600] Prop_KL: 36.34, 21.73, Word: 95.38, Topo: 99.42, Assm: 95.92, Log_prior_y: -3.96
+[175600] Unsup_KL: 37.10, 21.78, Word: 95.23, Topo: 99.42, Assm: 95.02, U_kld_y: 0.27
+
+[175650] Beta: 0.135, Loss: 16.75, Prop_loss: 7.48, U_loss: 6.75, YMSE: 0.19, DTrue: 0.16, DFalse: 2.17, PNorm: 969.34, GNorm: 14.63
+[175650] Prop_KL: 36.67, 22.96, Word: 95.39, Topo: 99.54, Assm: 94.81, Log_prior_y: -4.03
+[175650] Unsup_KL: 37.73, 23.01, Word: 95.25, Topo: 99.51, Assm: 94.48, U_kld_y: 0.34
+
+[175700] Beta: 0.135, Loss: 15.14, Prop_loss: 7.50, U_loss: 6.66, YMSE: 0.20, DTrue: 0.13, DFalse: 0.64, PNorm: 969.44, GNorm: 22.73
+[175700] Prop_KL: 36.14, 23.16, Word: 95.36, Topo: 99.52, Assm: 95.26, Log_prior_y: -3.96
+[175700] Unsup_KL: 36.90, 23.16, Word: 95.44, Topo: 99.42, Assm: 93.93, U_kld_y: 0.31
+
+[175750] Beta: 0.135, Loss: 16.04, Prop_loss: 7.39, U_loss: 6.59, YMSE: 0.19, DTrue: 0.11, DFalse: 1.76, PNorm: 969.55, GNorm: 18.46
+[175750] Prop_KL: 36.20, 21.83, Word: 95.03, Topo: 99.52, Assm: 95.05, Log_prior_y: -3.92
+[175750] Unsup_KL: 37.03, 21.94, Word: 95.11, Topo: 99.44, Assm: 94.47, U_kld_y: 0.30
+
+[175800] Beta: 0.135, Loss: 16.27, Prop_loss: 7.31, U_loss: 6.59, YMSE: 0.19, DTrue: 0.17, DFalse: 2.00, PNorm: 969.67, GNorm: 19.68
+[175800] Prop_KL: 36.56, 21.38, Word: 95.37, Topo: 99.55, Assm: 95.64, Log_prior_y: -3.93
+[175800] Unsup_KL: 37.09, 21.44, Word: 94.75, Topo: 99.48, Assm: 95.35, U_kld_y: 0.30
+
+[175850] Beta: 0.135, Loss: 15.86, Prop_loss: 7.38, U_loss: 6.53, YMSE: 0.20, DTrue: 0.18, DFalse: 1.56, PNorm: 969.77, GNorm: 40.28
+[175850] Prop_KL: 36.22, 21.65, Word: 95.24, Topo: 99.52, Assm: 95.89, Log_prior_y: -4.00
+[175850] Unsup_KL: 37.03, 21.61, Word: 95.20, Topo: 99.40, Assm: 95.02, U_kld_y: 0.31
+
+[175900] Beta: 0.135, Loss: 16.22, Prop_loss: 7.47, U_loss: 6.62, YMSE: 0.20, DTrue: 0.14, DFalse: 1.79, PNorm: 969.90, GNorm: 50.00
+[175900] Prop_KL: 36.85, 22.23, Word: 95.50, Topo: 99.37, Assm: 96.05, Log_prior_y: -3.96
+[175900] Unsup_KL: 37.26, 22.32, Word: 95.10, Topo: 99.42, Assm: 95.28, U_kld_y: 0.33
+
+[175950] Beta: 0.135, Loss: 15.13, Prop_loss: 7.41, U_loss: 6.61, YMSE: 0.20, DTrue: 0.12, DFalse: 0.79, PNorm: 970.01, GNorm: 14.94
+[175950] Prop_KL: 36.42, 22.27, Word: 95.46, Topo: 99.52, Assm: 95.44, Log_prior_y: -3.97
+[175950] Unsup_KL: 37.41, 22.20, Word: 95.26, Topo: 99.45, Assm: 95.08, U_kld_y: 0.31
+
+[176000] Beta: 0.135, Loss: 14.94, Prop_loss: 7.52, U_loss: 6.64, YMSE: 0.20, DTrue: 0.12, DFalse: 0.45, PNorm: 970.11, GNorm: 18.33
+[176000] Prop_KL: 37.16, 22.01, Word: 95.37, Topo: 99.58, Assm: 94.64, Log_prior_y: -3.96
+[176000] Unsup_KL: 37.50, 22.05, Word: 95.06, Topo: 99.44, Assm: 94.70, U_kld_y: 0.28
+
+[176050] Beta: 0.136, Loss: 15.59, Prop_loss: 7.47, U_loss: 6.59, YMSE: 0.19, DTrue: 0.19, DFalse: 1.16, PNorm: 970.22, GNorm: 20.00
+[176050] Prop_KL: 36.01, 21.97, Word: 95.21, Topo: 99.54, Assm: 94.99, Log_prior_y: -3.97
+[176050] Unsup_KL: 37.09, 21.98, Word: 95.41, Topo: 99.47, Assm: 94.74, U_kld_y: 0.31
+
+[176100] Beta: 0.136, Loss: 15.78, Prop_loss: 7.53, U_loss: 6.52, YMSE: 0.20, DTrue: 0.08, DFalse: 1.44, PNorm: 970.32, GNorm: 27.27
+[176100] Prop_KL: 36.68, 21.53, Word: 95.23, Topo: 99.47, Assm: 94.66, Log_prior_y: -3.99
+[176100] Unsup_KL: 37.18, 21.63, Word: 95.57, Topo: 99.45, Assm: 95.45, U_kld_y: 0.28
+
+[176150] Beta: 0.136, Loss: 15.83, Prop_loss: 7.35, U_loss: 6.58, YMSE: 0.19, DTrue: 0.27, DFalse: 1.44, PNorm: 970.43, GNorm: 28.28
+[176150] Prop_KL: 36.22, 21.88, Word: 95.56, Topo: 99.46, Assm: 95.18, Log_prior_y: -3.99
+[176150] Unsup_KL: 36.93, 21.87, Word: 95.05, Topo: 99.39, Assm: 95.47, U_kld_y: 0.29
+
+[176200] Beta: 0.136, Loss: 14.34, Prop_loss: 7.42, U_loss: 6.48, YMSE: 0.20, DTrue: 0.08, DFalse: 0.16, PNorm: 970.55, GNorm: 47.23
+[176200] Prop_KL: 36.72, 21.37, Word: 95.38, Topo: 99.42, Assm: 95.39, Log_prior_y: -4.01
+[176200] Unsup_KL: 37.25, 21.44, Word: 95.03, Topo: 99.52, Assm: 95.94, U_kld_y: 0.29
+
+fn  zinc310k-processed/frac0.5/prop-tensors-4.pkl zinc310k-processed/frac0.5/u-tensors-5.pkl
+Before load
+Loaded
+[176250] Beta: 0.136, Loss: 17.13, Prop_loss: 7.36, U_loss: 6.53, YMSE: 0.19, DTrue: 0.27, DFalse: 2.78, PNorm: 970.63, GNorm: 22.90
+[176250] Prop_KL: 36.63, 21.03, Word: 95.35, Topo: 99.53, Assm: 95.39, Log_prior_y: -3.96
+[176250] Unsup_KL: 37.18, 20.97, Word: 95.34, Topo: 99.43, Assm: 95.17, U_kld_y: 0.33
+
+[176300] Beta: 0.136, Loss: 15.43, Prop_loss: 7.45, U_loss: 6.74, YMSE: 0.20, DTrue: 0.17, DFalse: 0.87, PNorm: 970.71, GNorm: 17.65
+[176300] Prop_KL: 36.39, 23.33, Word: 95.45, Topo: 99.56, Assm: 96.02, Log_prior_y: -4.00
+[176300] Unsup_KL: 36.87, 23.24, Word: 95.15, Topo: 99.43, Assm: 94.40, U_kld_y: 0.31
+
+[176350] Beta: 0.136, Loss: 15.55, Prop_loss: 7.52, U_loss: 6.56, YMSE: 0.19, DTrue: 0.15, DFalse: 1.14, PNorm: 970.82, GNorm: 20.46
+[176350] Prop_KL: 36.35, 23.21, Word: 95.31, Topo: 99.57, Assm: 95.35, Log_prior_y: -3.96
+[176350] Unsup_KL: 36.35, 23.19, Word: 95.37, Topo: 99.57, Assm: 94.94, U_kld_y: 0.31
+
+[176400] Beta: 0.136, Loss: 15.12, Prop_loss: 7.58, U_loss: 6.77, YMSE: 0.21, DTrue: 0.08, DFalse: 0.47, PNorm: 970.93, GNorm: 16.33
+[176400] Prop_KL: 37.00, 22.93, Word: 95.05, Topo: 99.53, Assm: 95.24, Log_prior_y: -3.94
+[176400] Unsup_KL: 37.94, 22.93, Word: 95.08, Topo: 99.40, Assm: 95.30, U_kld_y: 0.30
+
+[176450] Beta: 0.136, Loss: 15.86, Prop_loss: 7.37, U_loss: 6.60, YMSE: 0.19, DTrue: 0.13, DFalse: 1.57, PNorm: 971.04, GNorm: 22.78
+[176450] Prop_KL: 36.11, 21.98, Word: 95.42, Topo: 99.48, Assm: 95.58, Log_prior_y: -3.99
+[176450] Unsup_KL: 37.17, 21.85, Word: 95.28, Topo: 99.48, Assm: 95.73, U_kld_y: 0.32
+
+[176500] Beta: 0.136, Loss: 14.62, Prop_loss: 7.39, U_loss: 6.56, YMSE: 0.21, DTrue: 0.10, DFalse: 0.37, PNorm: 971.16, GNorm: 19.30
+[176500] Prop_KL: 36.29, 21.41, Word: 95.15, Topo: 99.57, Assm: 95.51, Log_prior_y: -3.94
+[176500] Unsup_KL: 37.04, 21.53, Word: 95.12, Topo: 99.45, Assm: 95.45, U_kld_y: 0.30
+
+[176550] Beta: 0.136, Loss: 16.69, Prop_loss: 7.41, U_loss: 6.66, YMSE: 0.19, DTrue: 0.13, DFalse: 2.31, PNorm: 971.28, GNorm: 19.58
+[176550] Prop_KL: 35.95, 21.52, Word: 95.06, Topo: 99.42, Assm: 95.35, Log_prior_y: -3.96
+[176550] Unsup_KL: 37.46, 21.51, Word: 94.97, Topo: 99.41, Assm: 95.72, U_kld_y: 0.33
+
+[176600] Beta: 0.136, Loss: 16.05, Prop_loss: 7.31, U_loss: 6.57, YMSE: 0.18, DTrue: 0.12, DFalse: 1.87, PNorm: 971.38, GNorm: 19.68
+[176600] Prop_KL: 36.58, 21.63, Word: 95.73, Topo: 99.49, Assm: 95.66, Log_prior_y: -3.90
+[176600] Unsup_KL: 37.18, 21.63, Word: 95.40, Topo: 99.49, Assm: 94.25, U_kld_y: 0.31
+
+[176650] Beta: 0.136, Loss: 14.51, Prop_loss: 7.35, U_loss: 6.52, YMSE: 0.20, DTrue: 0.11, DFalse: 0.33, PNorm: 971.49, GNorm: 17.80
+[176650] Prop_KL: 36.26, 21.72, Word: 95.26, Topo: 99.49, Assm: 95.86, Log_prior_y: -3.92
+[176650] Unsup_KL: 36.66, 21.73, Word: 95.47, Topo: 99.47, Assm: 94.64, U_kld_y: 0.31
+
+[176700] Beta: 0.136, Loss: 15.79, Prop_loss: 7.49, U_loss: 6.59, YMSE: 0.19, DTrue: 0.19, DFalse: 1.33, PNorm: 971.59, GNorm: 22.48
+[176700] Prop_KL: 36.48, 21.76, Word: 95.11, Topo: 99.46, Assm: 94.85, Log_prior_y: -4.02
+[176700] Unsup_KL: 37.27, 21.66, Word: 95.25, Topo: 99.45, Assm: 95.51, U_kld_y: 0.30
+
+[176750] Beta: 0.136, Loss: 16.03, Prop_loss: 7.43, U_loss: 6.69, YMSE: 0.18, DTrue: 0.14, DFalse: 1.58, PNorm: 971.70, GNorm: 18.84
+[176750] Prop_KL: 36.49, 21.67, Word: 95.43, Topo: 99.56, Assm: 95.15, Log_prior_y: -4.02
+[176750] Unsup_KL: 37.06, 21.69, Word: 94.87, Topo: 99.34, Assm: 95.24, U_kld_y: 0.36
+
+[176800] Beta: 0.136, Loss: 16.58, Prop_loss: 7.42, U_loss: 6.49, YMSE: 0.18, DTrue: 0.10, DFalse: 2.39, PNorm: 971.81, GNorm: 50.00
+[176800] Prop_KL: 36.25, 21.81, Word: 95.48, Topo: 99.55, Assm: 95.55, Log_prior_y: -3.95
+[176800] Unsup_KL: 36.81, 21.74, Word: 95.31, Topo: 99.59, Assm: 95.58, U_kld_y: 0.31
+
+[176850] Beta: 0.136, Loss: 15.73, Prop_loss: 7.46, U_loss: 6.60, YMSE: 0.19, DTrue: 0.19, DFalse: 1.28, PNorm: 971.92, GNorm: 19.33
+[176850] Prop_KL: 36.67, 22.74, Word: 95.63, Topo: 99.46, Assm: 95.82, Log_prior_y: -3.97
+[176850] Unsup_KL: 36.98, 22.77, Word: 95.24, Topo: 99.50, Assm: 94.90, U_kld_y: 0.32
+
+[176900] Beta: 0.136, Loss: 14.29, Prop_loss: 7.34, U_loss: 6.58, YMSE: 0.18, DTrue: 0.11, DFalse: 0.08, PNorm: 972.02, GNorm: 19.15
+[176900] Prop_KL: 35.89, 22.05, Word: 95.51, Topo: 99.52, Assm: 95.85, Log_prior_y: -4.00
+[176900] Unsup_KL: 36.42, 22.20, Word: 95.16, Topo: 99.49, Assm: 95.36, U_kld_y: 0.35
+
+[176950] Beta: 0.136, Loss: 16.72, Prop_loss: 7.40, U_loss: 6.53, YMSE: 0.19, DTrue: 0.10, DFalse: 2.51, PNorm: 972.11, GNorm: 20.18
+[176950] Prop_KL: 35.74, 21.48, Word: 95.68, Topo: 99.47, Assm: 95.38, Log_prior_y: -4.04
+[176950] Unsup_KL: 36.51, 21.60, Word: 95.23, Topo: 99.49, Assm: 94.88, U_kld_y: 0.35
+
+[177000] Beta: 0.136, Loss: 15.91, Prop_loss: 7.43, U_loss: 6.68, YMSE: 0.18, DTrue: 0.11, DFalse: 1.52, PNorm: 972.22, GNorm: 16.33
+[177000] Prop_KL: 37.04, 21.81, Word: 95.21, Topo: 99.50, Assm: 95.13, Log_prior_y: -3.92
+[177000] Unsup_KL: 37.53, 21.60, Word: 95.38, Topo: 99.39, Assm: 94.65, U_kld_y: 0.31
+
+[177050] Beta: 0.137, Loss: 15.27, Prop_loss: 7.50, U_loss: 6.51, YMSE: 0.19, DTrue: 0.15, DFalse: 0.92, PNorm: 972.33, GNorm: 19.82
+[177050] Prop_KL: 36.12, 21.73, Word: 95.23, Topo: 99.49, Assm: 94.92, Log_prior_y: -3.98
+[177050] Unsup_KL: 36.11, 21.89, Word: 95.32, Topo: 99.39, Assm: 94.63, U_kld_y: 0.29
+
+[177100] Beta: 0.137, Loss: 15.25, Prop_loss: 7.44, U_loss: 6.58, YMSE: 0.21, DTrue: 0.10, DFalse: 0.93, PNorm: 972.43, GNorm: 22.53
+[177100] Prop_KL: 36.21, 21.39, Word: 95.38, Topo: 99.46, Assm: 95.22, Log_prior_y: -3.99
+[177100] Unsup_KL: 36.98, 21.37, Word: 95.30, Topo: 99.46, Assm: 95.94, U_kld_y: 0.30
+
+fn  zinc310k-processed/frac0.5/prop-tensors-5.pkl zinc310k-processed/frac0.5/u-tensors-4.pkl
+Before load
+Loaded
+[177150] Beta: 0.137, Loss: 15.88, Prop_loss: 7.28, U_loss: 6.66, YMSE: 0.20, DTrue: 0.22, DFalse: 1.53, PNorm: 972.51, GNorm: 32.34
+[177150] Prop_KL: 36.12, 20.86, Word: 95.56, Topo: 99.46, Assm: 96.23, Log_prior_y: -3.94
+[177150] Unsup_KL: 37.20, 20.76, Word: 94.98, Topo: 99.52, Assm: 95.09, U_kld_y: 0.30
+
+[177200] Beta: 0.137, Loss: 14.85, Prop_loss: 7.44, U_loss: 6.68, YMSE: 0.20, DTrue: 0.10, DFalse: 0.42, PNorm: 972.62, GNorm: 16.45
+[177200] Prop_KL: 36.36, 21.15, Word: 94.89, Topo: 99.50, Assm: 95.57, Log_prior_y: -3.97
+[177200] Unsup_KL: 36.97, 21.23, Word: 95.19, Topo: 99.37, Assm: 94.75, U_kld_y: 0.36
+
+[177250] Beta: 0.137, Loss: 16.42, Prop_loss: 7.48, U_loss: 6.73, YMSE: 0.20, DTrue: 0.11, DFalse: 1.90, PNorm: 972.75, GNorm: 18.22
+[177250] Prop_KL: 36.52, 21.44, Word: 95.07, Topo: 99.41, Assm: 95.73, Log_prior_y: -3.97
+[177250] Unsup_KL: 37.16, 21.37, Word: 95.15, Topo: 99.28, Assm: 95.37, U_kld_y: 0.33
+
+[177300] Beta: 0.137, Loss: 15.25, Prop_loss: 7.53, U_loss: 6.62, YMSE: 0.18, DTrue: 0.10, DFalse: 0.82, PNorm: 972.86, GNorm: 17.80
+[177300] Prop_KL: 36.30, 21.63, Word: 95.13, Topo: 99.49, Assm: 95.43, Log_prior_y: -4.04
+[177300] Unsup_KL: 36.90, 21.61, Word: 95.28, Topo: 99.47, Assm: 95.59, U_kld_y: 0.34
+
+[177350] Beta: 0.137, Loss: 16.32, Prop_loss: 7.33, U_loss: 6.57, YMSE: 0.19, DTrue: 0.18, DFalse: 2.05, PNorm: 972.95, GNorm: 20.27
+[177350] Prop_KL: 36.53, 21.16, Word: 95.52, Topo: 99.54, Assm: 95.04, Log_prior_y: -3.95
+[177350] Unsup_KL: 36.71, 21.17, Word: 94.91, Topo: 99.54, Assm: 95.30, U_kld_y: 0.32
+
+[177400] Beta: 0.137, Loss: 15.63, Prop_loss: 7.49, U_loss: 6.71, YMSE: 0.19, DTrue: 0.18, DFalse: 1.07, PNorm: 973.04, GNorm: 19.42
+[177400] Prop_KL: 36.21, 22.59, Word: 95.51, Topo: 99.49, Assm: 95.90, Log_prior_y: -3.92
+[177400] Unsup_KL: 36.97, 22.63, Word: 95.07, Topo: 99.50, Assm: 95.17, U_kld_y: 0.36
+
+[177450] Beta: 0.137, Loss: 17.28, Prop_loss: 7.66, U_loss: 6.78, YMSE: 0.20, DTrue: 0.13, DFalse: 2.51, PNorm: 973.14, GNorm: 18.13
+[177450] Prop_KL: 36.78, 22.97, Word: 94.99, Topo: 99.57, Assm: 95.25, Log_prior_y: -4.07
+[177450] Unsup_KL: 37.16, 22.91, Word: 95.17, Topo: 99.44, Assm: 94.43, U_kld_y: 0.33
+
+[177500] Beta: 0.137, Loss: 16.51, Prop_loss: 7.44, U_loss: 6.71, YMSE: 0.19, DTrue: 0.13, DFalse: 2.04, PNorm: 973.24, GNorm: 18.71
+[177500] Prop_KL: 35.75, 22.46, Word: 95.34, Topo: 99.57, Assm: 95.91, Log_prior_y: -3.98
+[177500] Unsup_KL: 36.54, 22.48, Word: 94.95, Topo: 99.50, Assm: 95.03, U_kld_y: 0.31
+
+[177550] Beta: 0.137, Loss: 15.48, Prop_loss: 7.43, U_loss: 6.67, YMSE: 0.22, DTrue: 0.14, DFalse: 1.03, PNorm: 973.34, GNorm: 17.74
+[177550] Prop_KL: 36.43, 22.73, Word: 95.46, Topo: 99.57, Assm: 96.15, Log_prior_y: -4.01
+[177550] Unsup_KL: 36.90, 22.77, Word: 95.24, Topo: 99.55, Assm: 95.20, U_kld_y: 0.30
+
+[177600] Beta: 0.137, Loss: 14.61, Prop_loss: 7.43, U_loss: 6.74, YMSE: 0.20, DTrue: 0.10, DFalse: 0.15, PNorm: 973.44, GNorm: 19.83
+[177600] Prop_KL: 36.10, 21.89, Word: 95.24, Topo: 99.51, Assm: 95.98, Log_prior_y: -3.93
+[177600] Unsup_KL: 37.03, 22.07, Word: 95.00, Topo: 99.48, Assm: 95.64, U_kld_y: 0.34
+
+[177650] Beta: 0.137, Loss: 16.60, Prop_loss: 7.34, U_loss: 6.54, YMSE: 0.21, DTrue: 0.16, DFalse: 2.35, PNorm: 973.55, GNorm: 15.44
+[177650] Prop_KL: 36.24, 21.32, Word: 95.34, Topo: 99.51, Assm: 96.18, Log_prior_y: -3.95
+[177650] Unsup_KL: 36.89, 21.31, Word: 95.23, Topo: 99.46, Assm: 95.85, U_kld_y: 0.28
+
+[177700] Beta: 0.137, Loss: 15.44, Prop_loss: 7.51, U_loss: 6.60, YMSE: 0.21, DTrue: 0.15, DFalse: 0.96, PNorm: 973.65, GNorm: 24.48
+[177700] Prop_KL: 36.31, 22.34, Word: 95.37, Topo: 99.49, Assm: 95.87, Log_prior_y: -4.06
+[177700] Unsup_KL: 36.86, 22.23, Word: 95.24, Topo: 99.50, Assm: 95.28, U_kld_y: 0.31
+
+[177750] Beta: 0.137, Loss: 15.76, Prop_loss: 7.47, U_loss: 6.63, YMSE: 0.19, DTrue: 0.11, DFalse: 1.36, PNorm: 973.76, GNorm: 12.49
+[177750] Prop_KL: 36.51, 21.74, Word: 95.08, Topo: 99.56, Assm: 95.27, Log_prior_y: -3.96
+[177750] Unsup_KL: 37.29, 21.77, Word: 95.31, Topo: 99.47, Assm: 95.05, U_kld_y: 0.32
+
+[177800] Beta: 0.137, Loss: 15.24, Prop_loss: 7.44, U_loss: 6.56, YMSE: 0.20, DTrue: 0.16, DFalse: 0.88, PNorm: 973.87, GNorm: 18.33
+[177800] Prop_KL: 36.27, 21.32, Word: 95.31, Topo: 99.47, Assm: 95.12, Log_prior_y: -3.97
+[177800] Unsup_KL: 36.90, 21.35, Word: 95.47, Topo: 99.49, Assm: 94.80, U_kld_y: 0.30
+
+[177850] Beta: 0.137, Loss: 14.77, Prop_loss: 7.43, U_loss: 6.61, YMSE: 0.19, DTrue: 0.11, DFalse: 0.43, PNorm: 973.99, GNorm: 26.42
+[177850] Prop_KL: 36.32, 21.14, Word: 95.18, Topo: 99.51, Assm: 95.06, Log_prior_y: -3.93
+[177850] Unsup_KL: 37.26, 21.09, Word: 95.01, Topo: 99.39, Assm: 95.58, U_kld_y: 0.29
+
+[177900] Beta: 0.137, Loss: 17.33, Prop_loss: 7.43, U_loss: 6.69, YMSE: 0.18, DTrue: 0.13, DFalse: 2.90, PNorm: 974.08, GNorm: 14.06
+[177900] Prop_KL: 36.26, 21.64, Word: 95.29, Topo: 99.49, Assm: 95.39, Log_prior_y: -3.93
+[177900] Unsup_KL: 36.93, 21.64, Word: 94.97, Topo: 99.45, Assm: 94.87, U_kld_y: 0.33
+
+[177950] Beta: 0.137, Loss: 17.90, Prop_loss: 7.47, U_loss: 6.62, YMSE: 0.21, DTrue: 0.14, DFalse: 3.46, PNorm: 974.20, GNorm: 22.00
+[177950] Prop_KL: 36.21, 21.18, Word: 95.29, Topo: 99.48, Assm: 95.42, Log_prior_y: -4.03
+[177950] Unsup_KL: 36.73, 21.32, Word: 95.07, Topo: 99.44, Assm: 94.78, U_kld_y: 0.33
+
+[178000] Beta: 0.137, Loss: 15.62, Prop_loss: 7.36, U_loss: 6.52, YMSE: 0.19, DTrue: 0.14, DFalse: 1.40, PNorm: 974.27, GNorm: 19.70
+[178000] Prop_KL: 36.61, 21.00, Word: 95.59, Topo: 99.50, Assm: 95.28, Log_prior_y: -3.92
+[178000] Unsup_KL: 36.82, 21.05, Word: 95.31, Topo: 99.46, Assm: 95.34, U_kld_y: 0.32
+
+fn  zinc310k-processed/frac0.5/prop-tensors-2.pkl zinc310k-processed/frac0.5/u-tensors-3.pkl
+Before load
+Loaded
+[178050] Beta: 0.138, Loss: 16.70, Prop_loss: 7.53, U_loss: 6.68, YMSE: 0.23, DTrue: 0.23, DFalse: 2.04, PNorm: 974.37, GNorm: 19.27
+[178050] Prop_KL: 35.77, 21.16, Word: 95.08, Topo: 99.46, Assm: 94.07, Log_prior_y: -3.95
+[178050] Unsup_KL: 36.54, 21.22, Word: 94.96, Topo: 99.47, Assm: 93.97, U_kld_y: 0.28
+
+[178100] Beta: 0.138, Loss: 15.79, Prop_loss: 7.61, U_loss: 6.66, YMSE: 0.22, DTrue: 0.15, DFalse: 1.15, PNorm: 974.48, GNorm: 17.74
+[178100] Prop_KL: 36.27, 22.12, Word: 95.03, Topo: 99.43, Assm: 95.24, Log_prior_y: -3.98
+[178100] Unsup_KL: 36.57, 22.14, Word: 95.32, Topo: 99.37, Assm: 95.05, U_kld_y: 0.32
+
+[178150] Beta: 0.138, Loss: 15.33, Prop_loss: 7.57, U_loss: 6.81, YMSE: 0.21, DTrue: 0.13, DFalse: 0.62, PNorm: 974.59, GNorm: 24.18
+[178150] Prop_KL: 36.13, 22.17, Word: 95.15, Topo: 99.45, Assm: 95.09, Log_prior_y: -3.97
+[178150] Unsup_KL: 37.21, 22.19, Word: 94.67, Topo: 99.40, Assm: 95.11, U_kld_y: 0.31
+
+[178200] Beta: 0.138, Loss: 15.40, Prop_loss: 7.50, U_loss: 6.80, YMSE: 0.20, DTrue: 0.16, DFalse: 0.74, PNorm: 974.68, GNorm: 50.00
+[178200] Prop_KL: 35.96, 22.17, Word: 95.20, Topo: 99.51, Assm: 95.17, Log_prior_y: -3.97
+[178200] Unsup_KL: 37.11, 22.19, Word: 94.84, Topo: 99.48, Assm: 95.47, U_kld_y: 0.32
+
+[178250] Beta: 0.138, Loss: 15.30, Prop_loss: 7.64, U_loss: 6.81, YMSE: 0.22, DTrue: 0.16, DFalse: 0.47, PNorm: 974.82, GNorm: 18.92
+[178250] Prop_KL: 36.03, 21.83, Word: 94.78, Topo: 99.31, Assm: 94.47, Log_prior_y: -3.96
+[178250] Unsup_KL: 37.12, 21.83, Word: 94.91, Topo: 99.34, Assm: 95.07, U_kld_y: 0.34
+
+[178300] Beta: 0.138, Loss: 16.55, Prop_loss: 7.64, U_loss: 6.61, YMSE: 0.20, DTrue: 0.09, DFalse: 2.00, PNorm: 974.91, GNorm: 17.19
+[178300] Prop_KL: 36.41, 21.28, Word: 95.12, Topo: 99.38, Assm: 95.32, Log_prior_y: -4.01
+[178300] Unsup_KL: 36.79, 21.36, Word: 95.10, Topo: 99.44, Assm: 95.35, U_kld_y: 0.33
+
+[178350] Beta: 0.138, Loss: 17.28, Prop_loss: 7.44, U_loss: 6.77, YMSE: 0.19, DTrue: 0.14, DFalse: 2.75, PNorm: 975.03, GNorm: 22.66
+[178350] Prop_KL: 36.11, 21.53, Word: 95.49, Topo: 99.45, Assm: 95.21, Log_prior_y: -3.97
+[178350] Unsup_KL: 36.88, 21.50, Word: 94.58, Topo: 99.40, Assm: 95.31, U_kld_y: 0.35
+
+[178400] Beta: 0.138, Loss: 14.97, Prop_loss: 7.54, U_loss: 6.70, YMSE: 0.21, DTrue: 0.07, DFalse: 0.45, PNorm: 975.13, GNorm: 20.29
+[178400] Prop_KL: 36.62, 20.94, Word: 95.38, Topo: 99.42, Assm: 95.56, Log_prior_y: -4.01
+[178400] Unsup_KL: 37.38, 21.12, Word: 94.93, Topo: 99.47, Assm: 94.65, U_kld_y: 0.34
+
+[178450] Beta: 0.138, Loss: 15.12, Prop_loss: 7.60, U_loss: 6.67, YMSE: 0.21, DTrue: 0.13, DFalse: 0.52, PNorm: 975.24, GNorm: 25.86
+[178450] Prop_KL: 36.35, 20.62, Word: 94.76, Topo: 99.38, Assm: 94.79, Log_prior_y: -4.01
+[178450] Unsup_KL: 36.76, 20.74, Word: 95.02, Topo: 99.36, Assm: 95.23, U_kld_y: 0.35
+
+[178500] Beta: 0.138, Loss: 16.73, Prop_loss: 7.47, U_loss: 6.57, YMSE: 0.20, DTrue: 0.17, DFalse: 2.31, PNorm: 975.34, GNorm: 19.09
+[178500] Prop_KL: 36.32, 20.95, Word: 95.35, Topo: 99.46, Assm: 94.78, Log_prior_y: -3.91
+[178500] Unsup_KL: 36.68, 20.98, Word: 95.33, Topo: 99.41, Assm: 95.14, U_kld_y: 0.32
+
+[178550] Beta: 0.138, Loss: 17.14, Prop_loss: 7.57, U_loss: 6.59, YMSE: 0.20, DTrue: 0.13, DFalse: 2.65, PNorm: 975.45, GNorm: 18.59
+[178550] Prop_KL: 36.30, 21.13, Word: 95.18, Topo: 99.38, Assm: 95.26, Log_prior_y: -3.96
+[178550] Unsup_KL: 36.45, 21.16, Word: 94.99, Topo: 99.46, Assm: 94.87, U_kld_y: 0.33
+
+[178600] Beta: 0.138, Loss: 14.89, Prop_loss: 7.61, U_loss: 6.74, YMSE: 0.20, DTrue: 0.15, DFalse: 0.20, PNorm: 975.58, GNorm: 21.93
+[178600] Prop_KL: 36.33, 21.70, Word: 94.98, Topo: 99.43, Assm: 94.15, Log_prior_y: -3.91
+[178600] Unsup_KL: 37.12, 21.67, Word: 95.09, Topo: 99.39, Assm: 95.01, U_kld_y: 0.33
+
+[178650] Beta: 0.138, Loss: 14.76, Prop_loss: 7.59, U_loss: 6.61, YMSE: 0.21, DTrue: 0.09, DFalse: 0.26, PNorm: 975.68, GNorm: 18.43
+[178650] Prop_KL: 36.46, 21.18, Word: 94.83, Topo: 99.45, Assm: 94.85, Log_prior_y: -4.02
+[178650] Unsup_KL: 37.02, 21.26, Word: 95.00, Topo: 99.46, Assm: 95.36, U_kld_y: 0.31
+
+[178700] Beta: 0.138, Loss: 17.58, Prop_loss: 7.35, U_loss: 6.64, YMSE: 0.20, DTrue: 0.12, DFalse: 3.26, PNorm: 975.78, GNorm: 19.17
+[178700] Prop_KL: 35.57, 20.35, Word: 95.38, Topo: 99.44, Assm: 94.93, Log_prior_y: -4.01
+[178700] Unsup_KL: 36.78, 20.45, Word: 94.82, Topo: 99.44, Assm: 95.10, U_kld_y: 0.34
+
+[178750] Beta: 0.138, Loss: 14.97, Prop_loss: 7.41, U_loss: 6.76, YMSE: 0.20, DTrue: 0.14, DFalse: 0.46, PNorm: 975.89, GNorm: 18.31
+[178750] Prop_KL: 36.21, 20.83, Word: 95.28, Topo: 99.42, Assm: 94.94, Log_prior_y: -3.92
+[178750] Unsup_KL: 36.94, 20.77, Word: 94.75, Topo: 99.45, Assm: 94.09, U_kld_y: 0.34
+
+[178800] Beta: 0.138, Loss: 16.84, Prop_loss: 7.50, U_loss: 6.63, YMSE: 0.20, DTrue: 0.22, DFalse: 2.29, PNorm: 976.00, GNorm: 23.45
+[178800] Prop_KL: 36.24, 20.73, Word: 95.01, Topo: 99.53, Assm: 95.35, Log_prior_y: -4.00
+[178800] Unsup_KL: 36.81, 20.74, Word: 94.95, Topo: 99.42, Assm: 94.38, U_kld_y: 0.32
+
+[178850] Beta: 0.138, Loss: 15.78, Prop_loss: 7.49, U_loss: 6.78, YMSE: 0.21, DTrue: 0.13, DFalse: 1.17, PNorm: 976.13, GNorm: 50.00
+[178850] Prop_KL: 36.23, 21.73, Word: 95.57, Topo: 99.49, Assm: 95.24, Log_prior_y: -3.97
+[178850] Unsup_KL: 37.32, 21.74, Word: 94.96, Topo: 99.54, Assm: 94.62, U_kld_y: 0.32
+
+[178900] Beta: 0.138, Loss: 18.53, Prop_loss: 7.63, U_loss: 6.64, YMSE: 0.21, DTrue: 0.15, DFalse: 3.90, PNorm: 976.24, GNorm: 18.86
+[178900] Prop_KL: 36.08, 21.48, Word: 95.17, Topo: 99.46, Assm: 94.93, Log_prior_y: -4.04
+[178900] Unsup_KL: 36.46, 21.67, Word: 95.08, Topo: 99.36, Assm: 95.09, U_kld_y: 0.32
+
+Epoch  19
+nb_tensors  431
+nb_par  67
+SSMolTreeFolder iter
+fn  zinc310k-processed/frac0.5/prop-tensors-1.pkl zinc310k-processed/frac0.5/u-tensors-0.pkl
+Before load
+Loaded
+[178950] Beta: 0.138, Loss: 15.78, Prop_loss: 7.38, U_loss: 6.54, YMSE: 0.21, DTrue: 0.12, DFalse: 1.53, PNorm: 976.35, GNorm: 15.01
+[178950] Prop_KL: 35.91, 21.32, Word: 95.30, Topo: 99.56, Assm: 95.18, Log_prior_y: -4.03
+[178950] Unsup_KL: 36.39, 21.33, Word: 95.12, Topo: 99.51, Assm: 94.87, U_kld_y: 0.30
+
+[179000] Beta: 0.138, Loss: 17.10, Prop_loss: 7.52, U_loss: 6.67, YMSE: 0.22, DTrue: 0.19, DFalse: 2.50, PNorm: 976.46, GNorm: 50.00
+[179000] Prop_KL: 36.46, 21.52, Word: 95.33, Topo: 99.46, Assm: 95.18, Log_prior_y: -4.01
+[179000] Unsup_KL: 36.91, 21.57, Word: 95.45, Topo: 99.36, Assm: 94.82, U_kld_y: 0.32
+
+[179050] Beta: 0.139, Loss: 15.37, Prop_loss: 7.51, U_loss: 6.80, YMSE: 0.19, DTrue: 0.11, DFalse: 0.75, PNorm: 976.57, GNorm: 18.03
+[179050] Prop_KL: 35.83, 21.43, Word: 95.21, Topo: 99.54, Assm: 94.96, Log_prior_y: -4.00
+[179050] Unsup_KL: 36.66, 21.48, Word: 94.95, Topo: 99.41, Assm: 93.68, U_kld_y: 0.33
+
+[179100] Beta: 0.139, Loss: 16.04, Prop_loss: 7.41, U_loss: 6.62, YMSE: 0.20, DTrue: 0.11, DFalse: 1.70, PNorm: 976.67, GNorm: 17.05
+[179100] Prop_KL: 35.86, 21.24, Word: 95.60, Topo: 99.45, Assm: 95.30, Log_prior_y: -4.01
+[179100] Unsup_KL: 36.50, 21.23, Word: 95.18, Topo: 99.49, Assm: 94.73, U_kld_y: 0.30
+
+[179150] Beta: 0.139, Loss: 16.92, Prop_loss: 7.49, U_loss: 6.66, YMSE: 0.19, DTrue: 0.18, DFalse: 2.41, PNorm: 976.75, GNorm: 18.26
+[179150] Prop_KL: 35.58, 21.60, Word: 95.37, Topo: 99.42, Assm: 94.90, Log_prior_y: -3.99
+[179150] Unsup_KL: 36.73, 21.58, Word: 95.16, Topo: 99.45, Assm: 95.82, U_kld_y: 0.30
+
+[179200] Beta: 0.139, Loss: 15.88, Prop_loss: 7.65, U_loss: 6.67, YMSE: 0.20, DTrue: 0.18, DFalse: 1.18, PNorm: 976.83, GNorm: 20.91
+[179200] Prop_KL: 35.69, 22.29, Word: 95.09, Topo: 99.47, Assm: 94.53, Log_prior_y: -4.05
+[179200] Unsup_KL: 36.40, 22.36, Word: 95.43, Topo: 99.51, Assm: 94.47, U_kld_y: 0.33
+
+[179250] Beta: 0.139, Loss: 16.38, Prop_loss: 7.54, U_loss: 6.65, YMSE: 0.19, DTrue: 0.18, DFalse: 1.83, PNorm: 976.94, GNorm: 18.78
+[179250] Prop_KL: 36.01, 21.95, Word: 95.43, Topo: 99.44, Assm: 94.87, Log_prior_y: -3.95
+[179250] Unsup_KL: 37.10, 21.89, Word: 95.24, Topo: 99.52, Assm: 94.52, U_kld_y: 0.31
+
+[179300] Beta: 0.139, Loss: 16.11, Prop_loss: 7.52, U_loss: 6.76, YMSE: 0.19, DTrue: 0.09, DFalse: 1.54, PNorm: 977.05, GNorm: 19.17
+[179300] Prop_KL: 36.05, 21.85, Word: 95.33, Topo: 99.50, Assm: 95.13, Log_prior_y: -4.01
+[179300] Unsup_KL: 36.96, 21.79, Word: 94.99, Topo: 99.44, Assm: 94.81, U_kld_y: 0.34
+
+[179350] Beta: 0.139, Loss: 14.76, Prop_loss: 7.48, U_loss: 6.52, YMSE: 0.19, DTrue: 0.11, DFalse: 0.46, PNorm: 977.15, GNorm: 19.25
+[179350] Prop_KL: 36.13, 20.71, Word: 95.41, Topo: 99.41, Assm: 95.59, Log_prior_y: -4.04
+[179350] Unsup_KL: 36.30, 20.64, Word: 95.27, Topo: 99.48, Assm: 95.14, U_kld_y: 0.31
+
+[179400] Beta: 0.139, Loss: 15.64, Prop_loss: 7.32, U_loss: 6.56, YMSE: 0.18, DTrue: 0.18, DFalse: 1.40, PNorm: 977.25, GNorm: 17.69
+[179400] Prop_KL: 35.76, 20.75, Word: 95.39, Topo: 99.64, Assm: 94.75, Log_prior_y: -4.00
+[179400] Unsup_KL: 36.31, 20.74, Word: 95.30, Topo: 99.51, Assm: 95.48, U_kld_y: 0.33
+
+[179450] Beta: 0.139, Loss: 16.66, Prop_loss: 7.46, U_loss: 6.64, YMSE: 0.20, DTrue: 0.09, DFalse: 2.27, PNorm: 977.35, GNorm: 50.00
+[179450] Prop_KL: 36.37, 20.76, Word: 95.42, Topo: 99.46, Assm: 96.04, Log_prior_y: -4.04
+[179450] Unsup_KL: 37.27, 20.84, Word: 95.08, Topo: 99.45, Assm: 96.05, U_kld_y: 0.31
+
+[179500] Beta: 0.139, Loss: 17.53, Prop_loss: 7.59, U_loss: 6.65, YMSE: 0.20, DTrue: 0.18, DFalse: 2.92, PNorm: 977.44, GNorm: 18.77
+[179500] Prop_KL: 36.53, 21.49, Word: 95.02, Topo: 99.44, Assm: 95.32, Log_prior_y: -4.01
+[179500] Unsup_KL: 36.82, 21.50, Word: 95.22, Topo: 99.46, Assm: 94.77, U_kld_y: 0.32
+
+[179550] Beta: 0.139, Loss: 15.73, Prop_loss: 7.42, U_loss: 6.58, YMSE: 0.18, DTrue: 0.13, DFalse: 1.42, PNorm: 977.53, GNorm: 19.77
+[179550] Prop_KL: 35.60, 21.64, Word: 95.38, Topo: 99.50, Assm: 95.93, Log_prior_y: -3.96
+[179550] Unsup_KL: 36.57, 21.46, Word: 95.24, Topo: 99.54, Assm: 95.11, U_kld_y: 0.33
+
+[179600] Beta: 0.139, Loss: 16.25, Prop_loss: 7.40, U_loss: 6.63, YMSE: 0.19, DTrue: 0.18, DFalse: 1.85, PNorm: 977.62, GNorm: 18.78
+[179600] Prop_KL: 35.88, 21.80, Word: 95.39, Topo: 99.53, Assm: 95.61, Log_prior_y: -3.95
+[179600] Unsup_KL: 36.37, 21.75, Word: 94.90, Topo: 99.45, Assm: 95.70, U_kld_y: 0.33
+
+[179650] Beta: 0.139, Loss: 15.01, Prop_loss: 7.38, U_loss: 6.69, YMSE: 0.18, DTrue: 0.16, DFalse: 0.60, PNorm: 977.71, GNorm: 16.79
+[179650] Prop_KL: 35.58, 21.80, Word: 95.66, Topo: 99.52, Assm: 95.72, Log_prior_y: -4.00
+[179650] Unsup_KL: 36.11, 21.81, Word: 95.11, Topo: 99.45, Assm: 94.49, U_kld_y: 0.32
+
+[179700] Beta: 0.139, Loss: 15.47, Prop_loss: 7.49, U_loss: 6.72, YMSE: 0.19, DTrue: 0.12, DFalse: 0.97, PNorm: 977.81, GNorm: 20.56
+[179700] Prop_KL: 36.14, 21.64, Word: 95.28, Topo: 99.53, Assm: 95.37, Log_prior_y: -3.94
+[179700] Unsup_KL: 37.09, 21.59, Word: 94.80, Topo: 99.49, Assm: 95.34, U_kld_y: 0.32
+
+[179750] Beta: 0.139, Loss: 15.04, Prop_loss: 7.54, U_loss: 6.54, YMSE: 0.18, DTrue: 0.10, DFalse: 0.68, PNorm: 977.90, GNorm: 18.24
+[179750] Prop_KL: 36.55, 20.86, Word: 95.33, Topo: 99.51, Assm: 95.68, Log_prior_y: -4.05
+[179750] Unsup_KL: 37.03, 20.80, Word: 95.57, Topo: 99.48, Assm: 94.96, U_kld_y: 0.31
+
+fn  zinc310k-processed/frac0.5/prop-tensors-6.pkl zinc310k-processed/frac0.5/u-tensors-7.pkl
+Before load
+Loaded
+[179800] Beta: 0.139, Loss: 16.30, Prop_loss: 7.43, U_loss: 6.67, YMSE: 0.18, DTrue: 0.11, DFalse: 1.91, PNorm: 978.03, GNorm: 16.82
+[179800] Prop_KL: 35.83, 21.03, Word: 95.17, Topo: 99.44, Assm: 95.24, Log_prior_y: -3.96
+[179800] Unsup_KL: 37.04, 21.00, Word: 95.17, Topo: 99.51, Assm: 95.24, U_kld_y: 0.30
+
+[179850] Beta: 0.139, Loss: 15.83, Prop_loss: 7.44, U_loss: 6.69, YMSE: 0.18, DTrue: 0.21, DFalse: 1.32, PNorm: 978.13, GNorm: 50.00
+[179850] Prop_KL: 35.93, 21.29, Word: 95.34, Topo: 99.52, Assm: 95.69, Log_prior_y: -3.99
+[179850] Unsup_KL: 36.61, 21.37, Word: 95.04, Topo: 99.41, Assm: 95.20, U_kld_y: 0.32
+
+[179900] Beta: 0.139, Loss: 16.96, Prop_loss: 7.56, U_loss: 6.63, YMSE: 0.21, DTrue: 0.18, DFalse: 2.39, PNorm: 978.23, GNorm: 15.58
+[179900] Prop_KL: 35.85, 22.32, Word: 95.28, Topo: 99.44, Assm: 95.32, Log_prior_y: -3.97
+[179900] Unsup_KL: 36.38, 22.27, Word: 95.48, Topo: 99.44, Assm: 95.17, U_kld_y: 0.30
+
+[179950] Beta: 0.139, Loss: 17.96, Prop_loss: 7.69, U_loss: 6.83, YMSE: 0.21, DTrue: 0.15, DFalse: 3.08, PNorm: 978.34, GNorm: 50.00
+[179950] Prop_KL: 36.62, 22.93, Word: 94.93, Topo: 99.54, Assm: 94.79, Log_prior_y: -3.93
+[179950] Unsup_KL: 37.03, 23.08, Word: 95.10, Topo: 99.43, Assm: 94.60, U_kld_y: 0.29
+
+[180000] Beta: 0.139, Loss: 15.48, Prop_loss: 7.57, U_loss: 6.71, YMSE: 0.19, DTrue: 0.14, DFalse: 0.87, PNorm: 978.44, GNorm: 18.19
+[180000] Prop_KL: 36.40, 22.94, Word: 95.25, Topo: 99.46, Assm: 95.82, Log_prior_y: -3.98
+[180000] Unsup_KL: 36.64, 22.87, Word: 95.59, Topo: 99.44, Assm: 94.95, U_kld_y: 0.30
+
+[180050] Beta: 0.140, Loss: 15.64, Prop_loss: 7.54, U_loss: 6.66, YMSE: 0.20, DTrue: 0.14, DFalse: 1.11, PNorm: 978.57, GNorm: 19.71
+[180050] Prop_KL: 35.88, 22.15, Word: 95.45, Topo: 99.51, Assm: 95.17, Log_prior_y: -4.02
+[180050] Unsup_KL: 36.20, 22.28, Word: 95.04, Topo: 99.56, Assm: 94.46, U_kld_y: 0.31
+
+[180100] Beta: 0.140, Loss: 14.92, Prop_loss: 7.44, U_loss: 6.65, YMSE: 0.20, DTrue: 0.13, DFalse: 0.51, PNorm: 978.68, GNorm: 16.87
+[180100] Prop_KL: 36.07, 22.00, Word: 95.56, Topo: 99.54, Assm: 96.43, Log_prior_y: -3.95
+[180100] Unsup_KL: 36.54, 21.99, Word: 95.39, Topo: 99.40, Assm: 95.00, U_kld_y: 0.29
+
+[180150] Beta: 0.140, Loss: 14.91, Prop_loss: 7.48, U_loss: 6.62, YMSE: 0.20, DTrue: 0.13, DFalse: 0.47, PNorm: 978.77, GNorm: 15.22
+[180150] Prop_KL: 35.67, 21.60, Word: 95.42, Topo: 99.52, Assm: 94.99, Log_prior_y: -3.98
+[180150] Unsup_KL: 36.22, 21.63, Word: 95.26, Topo: 99.44, Assm: 95.40, U_kld_y: 0.31
+
+[180200] Beta: 0.140, Loss: 15.11, Prop_loss: 7.40, U_loss: 6.63, YMSE: 0.19, DTrue: 0.10, DFalse: 0.78, PNorm: 978.87, GNorm: 34.25
+[180200] Prop_KL: 35.70, 20.95, Word: 95.29, Topo: 99.48, Assm: 95.57, Log_prior_y: -3.94
+[180200] Unsup_KL: 36.81, 20.92, Word: 95.10, Topo: 99.49, Assm: 95.50, U_kld_y: 0.29
+
+[180250] Beta: 0.140, Loss: 14.62, Prop_loss: 7.41, U_loss: 6.50, YMSE: 0.20, DTrue: 0.13, DFalse: 0.39, PNorm: 978.99, GNorm: 45.25
+[180250] Prop_KL: 35.22, 20.41, Word: 95.23, Topo: 99.49, Assm: 94.43, Log_prior_y: -3.95
+[180250] Unsup_KL: 36.22, 20.40, Word: 95.37, Topo: 99.41, Assm: 95.96, U_kld_y: 0.31
+
+[180300] Beta: 0.140, Loss: 16.39, Prop_loss: 7.41, U_loss: 6.73, YMSE: 0.18, DTrue: 0.14, DFalse: 1.93, PNorm: 979.12, GNorm: 21.04
+[180300] Prop_KL: 36.22, 20.39, Word: 95.56, Topo: 99.47, Assm: 95.85, Log_prior_y: -3.97
+[180300] Unsup_KL: 37.05, 20.45, Word: 95.11, Topo: 99.53, Assm: 94.80, U_kld_y: 0.32
+
+[180350] Beta: 0.140, Loss: 17.18, Prop_loss: 7.36, U_loss: 6.62, YMSE: 0.18, DTrue: 0.16, DFalse: 2.86, PNorm: 979.21, GNorm: 22.58
+[180350] Prop_KL: 35.93, 20.74, Word: 95.38, Topo: 99.50, Assm: 95.72, Log_prior_y: -4.00
+[180350] Unsup_KL: 36.70, 20.86, Word: 95.00, Topo: 99.48, Assm: 95.67, U_kld_y: 0.32
+
+[180400] Beta: 0.140, Loss: 18.09, Prop_loss: 7.51, U_loss: 6.67, YMSE: 0.19, DTrue: 0.13, DFalse: 3.59, PNorm: 979.30, GNorm: 16.35
+[180400] Prop_KL: 35.86, 21.54, Word: 95.72, Topo: 99.44, Assm: 95.13, Log_prior_y: -4.05
+[180400] Unsup_KL: 36.46, 21.68, Word: 95.22, Topo: 99.43, Assm: 95.48, U_kld_y: 0.33
+
+[180450] Beta: 0.140, Loss: 15.99, Prop_loss: 7.60, U_loss: 6.75, YMSE: 0.19, DTrue: 0.10, DFalse: 1.34, PNorm: 979.39, GNorm: 19.91
+[180450] Prop_KL: 35.63, 22.33, Word: 95.37, Topo: 99.58, Assm: 94.83, Log_prior_y: -4.08
+[180450] Unsup_KL: 36.41, 22.23, Word: 95.29, Topo: 99.39, Assm: 94.69, U_kld_y: 0.31
+
+[180500] Beta: 0.140, Loss: 15.05, Prop_loss: 7.52, U_loss: 6.63, YMSE: 0.20, DTrue: 0.14, DFalse: 0.56, PNorm: 979.51, GNorm: 15.80
+[180500] Prop_KL: 35.79, 21.91, Word: 95.32, Topo: 99.50, Assm: 95.38, Log_prior_y: -3.95
+[180500] Unsup_KL: 36.63, 21.76, Word: 95.23, Topo: 99.47, Assm: 96.23, U_kld_y: 0.29
+
+[180550] Beta: 0.140, Loss: 14.68, Prop_loss: 7.52, U_loss: 6.59, YMSE: 0.19, DTrue: 0.13, DFalse: 0.25, PNorm: 979.60, GNorm: 22.13
+[180550] Prop_KL: 35.97, 21.08, Word: 95.17, Topo: 99.48, Assm: 95.20, Log_prior_y: -4.04
+[180550] Unsup_KL: 36.50, 21.07, Word: 95.35, Topo: 99.34, Assm: 94.55, U_kld_y: 0.28
+
+[180600] Beta: 0.140, Loss: 16.60, Prop_loss: 7.44, U_loss: 6.66, YMSE: 0.18, DTrue: 0.12, DFalse: 2.21, PNorm: 979.70, GNorm: 50.00
+[180600] Prop_KL: 35.98, 20.67, Word: 95.15, Topo: 99.49, Assm: 96.01, Log_prior_y: -3.92
+[180600] Unsup_KL: 36.56, 20.58, Word: 94.99, Topo: 99.46, Assm: 94.82, U_kld_y: 0.31
+
+[180650] Beta: 0.140, Loss: 15.66, Prop_loss: 7.45, U_loss: 6.63, YMSE: 0.17, DTrue: 0.19, DFalse: 1.21, PNorm: 979.82, GNorm: 24.81
+[180650] Prop_KL: 35.60, 21.60, Word: 95.57, Topo: 99.42, Assm: 95.12, Log_prior_y: -3.96
+[180650] Unsup_KL: 36.47, 21.70, Word: 95.14, Topo: 99.45, Assm: 96.05, U_kld_y: 0.31
+
+fn  zinc310k-processed/frac0.5/prop-tensors-8.pkl zinc310k-processed/frac0.5/u-tensors-9.pkl
+Before load
+Loaded
+[180700] Beta: 0.140, Loss: 15.67, Prop_loss: 7.51, U_loss: 6.60, YMSE: 0.19, DTrue: 0.10, DFalse: 1.28, PNorm: 979.92, GNorm: 24.26
+[180700] Prop_KL: 36.40, 21.36, Word: 95.38, Topo: 99.49, Assm: 95.71, Log_prior_y: -3.99
+[180700] Unsup_KL: 36.76, 21.42, Word: 95.24, Topo: 99.56, Assm: 95.49, U_kld_y: 0.30
+
+[180750] Beta: 0.140, Loss: 17.05, Prop_loss: 7.53, U_loss: 6.70, YMSE: 0.18, DTrue: 0.14, DFalse: 2.49, PNorm: 980.02, GNorm: 21.69
+[180750] Prop_KL: 36.61, 20.80, Word: 95.29, Topo: 99.41, Assm: 95.40, Log_prior_y: -3.97
+[180750] Unsup_KL: 37.21, 20.82, Word: 95.09, Topo: 99.40, Assm: 94.41, U_kld_y: 0.32
+
+[180800] Beta: 0.140, Loss: 15.65, Prop_loss: 7.56, U_loss: 6.73, YMSE: 0.19, DTrue: 0.17, DFalse: 1.00, PNorm: 980.12, GNorm: 16.45
+[180800] Prop_KL: 36.28, 21.41, Word: 95.39, Topo: 99.45, Assm: 95.00, Log_prior_y: -3.99
+[180800] Unsup_KL: 36.58, 21.45, Word: 95.27, Topo: 99.49, Assm: 94.40, U_kld_y: 0.35
+
+[180850] Beta: 0.140, Loss: 15.62, Prop_loss: 7.62, U_loss: 6.77, YMSE: 0.19, DTrue: 0.11, DFalse: 0.93, PNorm: 980.23, GNorm: 18.26
+[180850] Prop_KL: 36.12, 21.82, Word: 95.24, Topo: 99.47, Assm: 94.71, Log_prior_y: -4.00
+[180850] Unsup_KL: 37.03, 21.92, Word: 95.08, Topo: 99.44, Assm: 95.09, U_kld_y: 0.29
+
+[180900] Beta: 0.140, Loss: 15.17, Prop_loss: 7.55, U_loss: 6.62, YMSE: 0.19, DTrue: 0.15, DFalse: 0.67, PNorm: 980.32, GNorm: 26.86
+[180900] Prop_KL: 36.22, 20.98, Word: 95.27, Topo: 99.51, Assm: 95.30, Log_prior_y: -4.09
+[180900] Unsup_KL: 36.65, 20.95, Word: 95.15, Topo: 99.56, Assm: 95.78, U_kld_y: 0.34
+
+[180950] Beta: 0.140, Loss: 15.87, Prop_loss: 7.39, U_loss: 6.56, YMSE: 0.18, DTrue: 0.17, DFalse: 1.57, PNorm: 980.40, GNorm: 18.36
+[180950] Prop_KL: 35.51, 20.76, Word: 95.77, Topo: 99.46, Assm: 95.44, Log_prior_y: -3.95
+[180950] Unsup_KL: 36.28, 20.85, Word: 95.38, Topo: 99.46, Assm: 95.74, U_kld_y: 0.35
+
+[181000] Beta: 0.140, Loss: 16.11, Prop_loss: 7.51, U_loss: 6.63, YMSE: 0.20, DTrue: 0.17, DFalse: 1.61, PNorm: 980.51, GNorm: 19.79
+[181000] Prop_KL: 35.78, 21.24, Word: 95.34, Topo: 99.46, Assm: 94.29, Log_prior_y: -4.00
+[181000] Unsup_KL: 36.44, 21.33, Word: 95.43, Topo: 99.46, Assm: 95.11, U_kld_y: 0.33
+
+[181050] Beta: 0.141, Loss: 14.33, Prop_loss: 7.45, U_loss: 6.49, YMSE: 0.20, DTrue: 0.08, DFalse: 0.11, PNorm: 980.61, GNorm: 19.16
+[181050] Prop_KL: 36.02, 21.39, Word: 95.58, Topo: 99.52, Assm: 96.04, Log_prior_y: -3.96
+[181050] Unsup_KL: 36.22, 21.41, Word: 95.52, Topo: 99.55, Assm: 96.10, U_kld_y: 0.26
+
+[181100] Beta: 0.141, Loss: 15.62, Prop_loss: 7.52, U_loss: 6.65, YMSE: 0.19, DTrue: 0.24, DFalse: 1.02, PNorm: 980.68, GNorm: 14.78
+[181100] Prop_KL: 36.42, 20.25, Word: 95.45, Topo: 99.46, Assm: 95.58, Log_prior_y: -4.07
+[181100] Unsup_KL: 37.23, 20.38, Word: 95.33, Topo: 99.45, Assm: 95.89, U_kld_y: 0.32
+
+[181150] Beta: 0.141, Loss: 17.34, Prop_loss: 7.55, U_loss: 6.75, YMSE: 0.17, DTrue: 0.10, DFalse: 2.76, PNorm: 980.76, GNorm: 21.04
+[181150] Prop_KL: 36.06, 21.09, Word: 95.30, Topo: 99.25, Assm: 95.88, Log_prior_y: -3.94
+[181150] Unsup_KL: 36.82, 21.01, Word: 94.79, Topo: 99.49, Assm: 95.23, U_kld_y: 0.33
+
+[181200] Beta: 0.141, Loss: 15.34, Prop_loss: 7.62, U_loss: 6.71, YMSE: 0.19, DTrue: 0.14, DFalse: 0.67, PNorm: 980.87, GNorm: 20.03
+[181200] Prop_KL: 36.05, 21.33, Word: 95.21, Topo: 99.47, Assm: 95.24, Log_prior_y: -4.01
+[181200] Unsup_KL: 36.69, 21.25, Word: 94.87, Topo: 99.44, Assm: 95.21, U_kld_y: 0.30
+
+[181250] Beta: 0.141, Loss: 16.82, Prop_loss: 7.43, U_loss: 6.65, YMSE: 0.18, DTrue: 0.11, DFalse: 2.45, PNorm: 980.97, GNorm: 23.04
+[181250] Prop_KL: 35.97, 21.02, Word: 95.44, Topo: 99.51, Assm: 95.79, Log_prior_y: -3.93
+[181250] Unsup_KL: 36.45, 21.03, Word: 95.07, Topo: 99.43, Assm: 95.40, U_kld_y: 0.29
+
+[181300] Beta: 0.141, Loss: 16.72, Prop_loss: 7.45, U_loss: 6.70, YMSE: 0.19, DTrue: 0.21, DFalse: 2.17, PNorm: 981.06, GNorm: 18.15
+[181300] Prop_KL: 36.02, 21.23, Word: 95.47, Topo: 99.55, Assm: 95.27, Log_prior_y: -3.94
+[181300] Unsup_KL: 36.57, 21.22, Word: 95.05, Topo: 99.53, Assm: 95.44, U_kld_y: 0.30
+
+[181350] Beta: 0.141, Loss: 15.32, Prop_loss: 7.49, U_loss: 6.62, YMSE: 0.20, DTrue: 0.09, DFalse: 0.91, PNorm: 981.20, GNorm: 24.10
+[181350] Prop_KL: 36.08, 21.15, Word: 95.49, Topo: 99.51, Assm: 95.80, Log_prior_y: -4.06
+[181350] Unsup_KL: 36.32, 21.14, Word: 95.52, Topo: 99.45, Assm: 95.50, U_kld_y: 0.30
+
+[181400] Beta: 0.141, Loss: 17.50, Prop_loss: 7.56, U_loss: 6.78, YMSE: 0.19, DTrue: 0.18, DFalse: 2.79, PNorm: 981.29, GNorm: 21.46
+[181400] Prop_KL: 36.08, 21.32, Word: 95.29, Topo: 99.46, Assm: 95.03, Log_prior_y: -3.98
+[181400] Unsup_KL: 36.69, 21.30, Word: 94.90, Topo: 99.44, Assm: 95.03, U_kld_y: 0.32
+
+[181450] Beta: 0.141, Loss: 16.31, Prop_loss: 7.46, U_loss: 6.70, YMSE: 0.21, DTrue: 0.12, DFalse: 1.82, PNorm: 981.39, GNorm: 16.59
+[181450] Prop_KL: 35.63, 22.28, Word: 95.42, Topo: 99.42, Assm: 94.81, Log_prior_y: -3.84
+[181450] Unsup_KL: 36.67, 22.28, Word: 95.07, Topo: 99.51, Assm: 95.20, U_kld_y: 0.27
+
+[181500] Beta: 0.141, Loss: 14.93, Prop_loss: 7.56, U_loss: 6.64, YMSE: 0.20, DTrue: 0.11, DFalse: 0.42, PNorm: 981.51, GNorm: 19.57
+[181500] Prop_KL: 35.74, 21.93, Word: 95.52, Topo: 99.47, Assm: 95.98, Log_prior_y: -4.04
+[181500] Unsup_KL: 36.25, 21.83, Word: 95.12, Topo: 99.52, Assm: 95.35, U_kld_y: 0.31
+
+[181550] Beta: 0.141, Loss: 16.44, Prop_loss: 7.52, U_loss: 6.73, YMSE: 0.19, DTrue: 0.10, DFalse: 1.90, PNorm: 981.61, GNorm: 17.44
+[181550] Prop_KL: 36.03, 21.02, Word: 95.33, Topo: 99.43, Assm: 95.35, Log_prior_y: -4.01
+[181550] Unsup_KL: 36.66, 21.03, Word: 95.07, Topo: 99.40, Assm: 95.21, U_kld_y: 0.31
+
+fn  zinc310k-processed/frac0.5/prop-tensors-9.pkl zinc310k-processed/frac0.5/u-tensors-8.pkl
+Before load
+Loaded
+[181600] Beta: 0.141, Loss: 15.34, Prop_loss: 7.56, U_loss: 6.69, YMSE: 0.21, DTrue: 0.16, DFalse: 0.73, PNorm: 981.70, GNorm: 22.64
+[181600] Prop_KL: 36.45, 21.24, Word: 95.13, Topo: 99.48, Assm: 95.40, Log_prior_y: -3.96
+[181600] Unsup_KL: 36.60, 21.20, Word: 95.29, Topo: 99.49, Assm: 94.71, U_kld_y: 0.28
+
+[181650] Beta: 0.141, Loss: 14.74, Prop_loss: 7.47, U_loss: 6.60, YMSE: 0.19, DTrue: 0.10, DFalse: 0.39, PNorm: 981.80, GNorm: 44.80
+[181650] Prop_KL: 35.89, 20.76, Word: 95.22, Topo: 99.50, Assm: 95.61, Log_prior_y: -4.01
+[181650] Unsup_KL: 36.33, 20.82, Word: 95.32, Topo: 99.44, Assm: 95.69, U_kld_y: 0.29
+
+[181700] Beta: 0.141, Loss: 18.15, Prop_loss: 7.46, U_loss: 6.64, YMSE: 0.21, DTrue: 0.17, DFalse: 3.68, PNorm: 981.89, GNorm: 50.00
+[181700] Prop_KL: 35.62, 21.01, Word: 95.40, Topo: 99.44, Assm: 95.19, Log_prior_y: -3.96
+[181700] Unsup_KL: 36.54, 21.00, Word: 95.20, Topo: 99.52, Assm: 95.02, U_kld_y: 0.30
+
+[181750] Beta: 0.141, Loss: 15.04, Prop_loss: 7.54, U_loss: 6.78, YMSE: 0.20, DTrue: 0.09, DFalse: 0.43, PNorm: 982.01, GNorm: 20.12
+[181750] Prop_KL: 35.71, 21.22, Word: 95.34, Topo: 99.57, Assm: 95.13, Log_prior_y: -3.97
+[181750] Unsup_KL: 36.75, 21.20, Word: 95.00, Topo: 99.42, Assm: 95.09, U_kld_y: 0.30
+
+[181800] Beta: 0.141, Loss: 15.15, Prop_loss: 7.51, U_loss: 6.67, YMSE: 0.19, DTrue: 0.15, DFalse: 0.63, PNorm: 982.12, GNorm: 16.51
+[181800] Prop_KL: 36.20, 20.72, Word: 95.18, Topo: 99.39, Assm: 95.00, Log_prior_y: -3.94
+[181800] Unsup_KL: 37.12, 20.80, Word: 94.93, Topo: 99.59, Assm: 95.04, U_kld_y: 0.28
+
+[181850] Beta: 0.141, Loss: 14.78, Prop_loss: 7.42, U_loss: 6.67, YMSE: 0.19, DTrue: 0.12, DFalse: 0.39, PNorm: 982.22, GNorm: 18.16
+[181850] Prop_KL: 35.75, 20.41, Word: 95.34, Topo: 99.53, Assm: 95.84, Log_prior_y: -3.98
+[181850] Unsup_KL: 36.57, 20.51, Word: 94.88, Topo: 99.49, Assm: 95.34, U_kld_y: 0.35
+
+[181900] Beta: 0.141, Loss: 15.79, Prop_loss: 7.50, U_loss: 6.56, YMSE: 0.19, DTrue: 0.43, DFalse: 1.12, PNorm: 982.31, GNorm: 20.08
+[181900] Prop_KL: 35.96, 20.84, Word: 95.01, Topo: 99.53, Assm: 94.77, Log_prior_y: -3.96
+[181900] Unsup_KL: 36.54, 20.87, Word: 95.37, Topo: 99.44, Assm: 95.64, U_kld_y: 0.29
+
+[181950] Beta: 0.141, Loss: 15.75, Prop_loss: 7.57, U_loss: 6.77, YMSE: 0.20, DTrue: 0.16, DFalse: 1.05, PNorm: 982.42, GNorm: 15.41
+[181950] Prop_KL: 35.97, 22.14, Word: 95.44, Topo: 99.51, Assm: 94.20, Log_prior_y: -3.93
+[181950] Unsup_KL: 36.47, 22.14, Word: 95.06, Topo: 99.46, Assm: 94.97, U_kld_y: 0.31
+
+[182000] Beta: 0.141, Loss: 14.89, Prop_loss: 7.49, U_loss: 6.68, YMSE: 0.20, DTrue: 0.13, DFalse: 0.39, PNorm: 982.52, GNorm: 27.02
+[182000] Prop_KL: 35.75, 21.54, Word: 95.44, Topo: 99.53, Assm: 94.40, Log_prior_y: -3.93
+[182000] Unsup_KL: 36.38, 21.68, Word: 95.18, Topo: 99.47, Assm: 95.41, U_kld_y: 0.32
+
+[182050] Beta: 0.142, Loss: 15.76, Prop_loss: 7.68, U_loss: 6.69, YMSE: 0.20, DTrue: 0.12, DFalse: 1.08, PNorm: 982.62, GNorm: 16.02
+[182050] Prop_KL: 36.11, 21.51, Word: 95.26, Topo: 99.44, Assm: 95.19, Log_prior_y: -3.97
+[182050] Unsup_KL: 36.10, 21.68, Word: 95.06, Topo: 99.47, Assm: 94.78, U_kld_y: 0.30
+
+[182100] Beta: 0.142, Loss: 16.76, Prop_loss: 7.60, U_loss: 6.88, YMSE: 0.20, DTrue: 0.18, DFalse: 1.90, PNorm: 982.74, GNorm: 20.04
+[182100] Prop_KL: 35.92, 21.54, Word: 95.40, Topo: 99.41, Assm: 95.16, Log_prior_y: -4.03
+[182100] Unsup_KL: 36.76, 21.67, Word: 94.63, Topo: 99.42, Assm: 94.77, U_kld_y: 0.33
+
+[182150] Beta: 0.142, Loss: 15.72, Prop_loss: 7.48, U_loss: 6.75, YMSE: 0.19, DTrue: 0.13, DFalse: 1.17, PNorm: 982.85, GNorm: 15.61
+[182150] Prop_KL: 35.41, 22.24, Word: 95.35, Topo: 99.55, Assm: 95.38, Log_prior_y: -3.96
+[182150] Unsup_KL: 36.33, 22.34, Word: 95.15, Topo: 99.44, Assm: 95.69, U_kld_y: 0.33
+
+[182200] Beta: 0.142, Loss: 16.93, Prop_loss: 7.60, U_loss: 6.69, YMSE: 0.19, DTrue: 0.14, DFalse: 2.31, PNorm: 982.95, GNorm: 19.66
+[182200] Prop_KL: 36.21, 21.43, Word: 95.19, Topo: 99.47, Assm: 95.25, Log_prior_y: -3.96
+[182200] Unsup_KL: 36.73, 21.42, Word: 95.10, Topo: 99.41, Assm: 96.17, U_kld_y: 0.29
+
+[182250] Beta: 0.142, Loss: 14.90, Prop_loss: 7.50, U_loss: 6.61, YMSE: 0.19, DTrue: 0.14, DFalse: 0.47, PNorm: 983.07, GNorm: 16.66
+[182250] Prop_KL: 35.22, 21.28, Word: 95.10, Topo: 99.49, Assm: 96.26, Log_prior_y: -4.01
+[182250] Unsup_KL: 36.14, 21.37, Word: 95.07, Topo: 99.55, Assm: 95.48, U_kld_y: 0.30
+
+[182300] Beta: 0.142, Loss: 14.75, Prop_loss: 7.45, U_loss: 6.48, YMSE: 0.19, DTrue: 0.18, DFalse: 0.44, PNorm: 983.16, GNorm: 17.80
+[182300] Prop_KL: 36.03, 20.67, Word: 95.78, Topo: 99.53, Assm: 95.70, Log_prior_y: -4.01
+[182300] Unsup_KL: 35.91, 20.65, Word: 95.53, Topo: 99.50, Assm: 96.08, U_kld_y: 0.32
+
+[182350] Beta: 0.142, Loss: 15.70, Prop_loss: 7.37, U_loss: 6.70, YMSE: 0.19, DTrue: 0.21, DFalse: 1.22, PNorm: 983.26, GNorm: 18.44
+[182350] Prop_KL: 35.72, 20.17, Word: 95.44, Topo: 99.49, Assm: 95.63, Log_prior_y: -3.92
+[182350] Unsup_KL: 36.45, 20.20, Word: 94.53, Topo: 99.42, Assm: 95.44, U_kld_y: 0.31
+
+[182400] Beta: 0.142, Loss: 15.25, Prop_loss: 7.44, U_loss: 6.69, YMSE: 0.19, DTrue: 0.06, DFalse: 0.87, PNorm: 983.37, GNorm: 18.14
+[182400] Prop_KL: 35.85, 20.80, Word: 95.29, Topo: 99.54, Assm: 94.90, Log_prior_y: -3.93
+[182400] Unsup_KL: 36.48, 20.89, Word: 95.15, Topo: 99.43, Assm: 95.54, U_kld_y: 0.32
+
+[182450] Beta: 0.142, Loss: 16.00, Prop_loss: 7.52, U_loss: 6.55, YMSE: 0.19, DTrue: 0.18, DFalse: 1.56, PNorm: 983.46, GNorm: 20.77
+[182450] Prop_KL: 36.07, 19.80, Word: 95.22, Topo: 99.40, Assm: 95.57, Log_prior_y: -4.01
+[182450] Unsup_KL: 36.30, 19.94, Word: 95.06, Topo: 99.42, Assm: 95.29, U_kld_y: 0.29
+
+fn  zinc310k-processed/frac0.5/prop-tensors-7.pkl zinc310k-processed/frac0.5/u-tensors-6.pkl
+Before load
+Loaded
+[182500] Beta: 0.142, Loss: 16.14, Prop_loss: 7.44, U_loss: 6.59, YMSE: 0.19, DTrue: 0.11, DFalse: 1.81, PNorm: 983.57, GNorm: 38.32
+[182500] Prop_KL: 35.67, 20.78, Word: 95.41, Topo: 99.47, Assm: 95.41, Log_prior_y: -3.86
+[182500] Unsup_KL: 36.43, 20.67, Word: 95.28, Topo: 99.44, Assm: 95.34, U_kld_y: 0.31
+
+[182550] Beta: 0.142, Loss: 15.15, Prop_loss: 7.42, U_loss: 6.60, YMSE: 0.20, DTrue: 0.08, DFalse: 0.85, PNorm: 983.67, GNorm: 19.55
+[182550] Prop_KL: 35.66, 20.48, Word: 95.24, Topo: 99.41, Assm: 94.74, Log_prior_y: -3.89
+[182550] Unsup_KL: 35.95, 20.34, Word: 95.13, Topo: 99.49, Assm: 95.12, U_kld_y: 0.29
+
+[182600] Beta: 0.142, Loss: 17.67, Prop_loss: 7.42, U_loss: 6.69, YMSE: 0.19, DTrue: 0.19, DFalse: 3.18, PNorm: 983.77, GNorm: 18.94
+[182600] Prop_KL: 35.77, 20.68, Word: 95.56, Topo: 99.55, Assm: 95.90, Log_prior_y: -3.96
+[182600] Unsup_KL: 36.66, 20.65, Word: 95.02, Topo: 99.45, Assm: 95.58, U_kld_y: 0.35
+
+[182650] Beta: 0.142, Loss: 16.71, Prop_loss: 7.55, U_loss: 6.82, YMSE: 0.19, DTrue: 0.17, DFalse: 1.98, PNorm: 983.86, GNorm: 18.66
+[182650] Prop_KL: 35.72, 21.21, Word: 95.42, Topo: 99.49, Assm: 94.31, Log_prior_y: -4.00
+[182650] Unsup_KL: 36.68, 21.07, Word: 94.95, Topo: 99.42, Assm: 94.44, U_kld_y: 0.31
+
+[182700] Beta: 0.142, Loss: 15.77, Prop_loss: 7.46, U_loss: 6.85, YMSE: 0.18, DTrue: 0.11, DFalse: 1.18, PNorm: 983.97, GNorm: 21.56
+[182700] Prop_KL: 36.04, 21.00, Word: 95.29, Topo: 99.42, Assm: 96.34, Log_prior_y: -3.96
+[182700] Unsup_KL: 36.83, 21.05, Word: 94.68, Topo: 99.49, Assm: 94.87, U_kld_y: 0.31
+
+[182750] Beta: 0.142, Loss: 15.88, Prop_loss: 7.51, U_loss: 6.67, YMSE: 0.19, DTrue: 0.19, DFalse: 1.31, PNorm: 984.07, GNorm: 50.00
+[182750] Prop_KL: 35.63, 20.58, Word: 95.25, Topo: 99.43, Assm: 95.11, Log_prior_y: -4.00
+[182750] Unsup_KL: 36.46, 20.60, Word: 95.02, Topo: 99.45, Assm: 95.19, U_kld_y: 0.30
+
+[182800] Beta: 0.142, Loss: 15.51, Prop_loss: 7.54, U_loss: 6.70, YMSE: 0.20, DTrue: 0.24, DFalse: 0.82, PNorm: 984.16, GNorm: 15.92
+[182800] Prop_KL: 35.94, 21.03, Word: 95.38, Topo: 99.53, Assm: 95.03, Log_prior_y: -3.99
+[182800] Unsup_KL: 36.67, 21.02, Word: 95.39, Topo: 99.52, Assm: 94.50, U_kld_y: 0.34
+
+[182850] Beta: 0.142, Loss: 16.05, Prop_loss: 7.48, U_loss: 6.56, YMSE: 0.19, DTrue: 0.11, DFalse: 1.72, PNorm: 984.25, GNorm: 24.98
+[182850] Prop_KL: 35.50, 20.82, Word: 95.39, Topo: 99.49, Assm: 95.17, Log_prior_y: -3.94
+[182850] Unsup_KL: 36.00, 20.77, Word: 95.15, Topo: 99.45, Assm: 95.13, U_kld_y: 0.32
+
+[182900] Beta: 0.142, Loss: 16.73, Prop_loss: 7.60, U_loss: 6.65, YMSE: 0.20, DTrue: 0.20, DFalse: 2.08, PNorm: 984.35, GNorm: 16.91
+[182900] Prop_KL: 36.20, 20.92, Word: 95.54, Topo: 99.42, Assm: 94.54, Log_prior_y: -3.95
+[182900] Unsup_KL: 36.36, 20.82, Word: 95.12, Topo: 99.45, Assm: 95.01, U_kld_y: 0.28
+
+[182950] Beta: 0.142, Loss: 16.29, Prop_loss: 7.65, U_loss: 6.69, YMSE: 0.20, DTrue: 0.15, DFalse: 1.61, PNorm: 984.48, GNorm: 20.44
+[182950] Prop_KL: 35.77, 21.12, Word: 95.08, Topo: 99.52, Assm: 94.21, Log_prior_y: -3.97
+[182950] Unsup_KL: 36.17, 21.21, Word: 95.43, Topo: 99.54, Assm: 94.34, U_kld_y: 0.33
+
+[183000] Beta: 0.142, Loss: 16.05, Prop_loss: 7.67, U_loss: 6.73, YMSE: 0.19, DTrue: 0.10, DFalse: 1.36, PNorm: 984.61, GNorm: 49.49
+[183000] Prop_KL: 36.73, 20.76, Word: 95.38, Topo: 99.42, Assm: 94.45, Log_prior_y: -4.00
+[183000] Unsup_KL: 37.23, 20.85, Word: 95.30, Topo: 99.42, Assm: 95.46, U_kld_y: 0.32
+
+[183050] Beta: 0.143, Loss: 15.49, Prop_loss: 7.58, U_loss: 6.73, YMSE: 0.20, DTrue: 0.17, DFalse: 0.81, PNorm: 984.72, GNorm: 19.63
+[183050] Prop_KL: 35.97, 20.70, Word: 95.00, Topo: 99.42, Assm: 94.97, Log_prior_y: -3.96
+[183050] Unsup_KL: 36.50, 20.78, Word: 95.09, Topo: 99.44, Assm: 95.00, U_kld_y: 0.31
+
+[183100] Beta: 0.143, Loss: 15.02, Prop_loss: 7.54, U_loss: 6.66, YMSE: 0.19, DTrue: 0.15, DFalse: 0.49, PNorm: 984.83, GNorm: 23.82
+[183100] Prop_KL: 35.90, 20.25, Word: 95.35, Topo: 99.43, Assm: 94.83, Log_prior_y: -3.96
+[183100] Unsup_KL: 36.11, 20.27, Word: 95.33, Topo: 99.53, Assm: 94.93, U_kld_y: 0.34
+
+[183150] Beta: 0.143, Loss: 15.12, Prop_loss: 7.49, U_loss: 6.75, YMSE: 0.19, DTrue: 0.11, DFalse: 0.58, PNorm: 984.94, GNorm: 20.61
+[183150] Prop_KL: 35.63, 20.68, Word: 95.21, Topo: 99.55, Assm: 94.80, Log_prior_y: -3.91
+[183150] Unsup_KL: 36.26, 20.72, Word: 94.54, Topo: 99.48, Assm: 94.55, U_kld_y: 0.30
+
+[183200] Beta: 0.143, Loss: 16.70, Prop_loss: 7.57, U_loss: 6.68, YMSE: 0.20, DTrue: 0.23, DFalse: 2.02, PNorm: 985.05, GNorm: 17.88
+[183200] Prop_KL: 35.75, 20.74, Word: 95.25, Topo: 99.43, Assm: 96.06, Log_prior_y: -4.01
+[183200] Unsup_KL: 36.64, 20.86, Word: 95.30, Topo: 99.41, Assm: 95.81, U_kld_y: 0.31
+
+[183250] Beta: 0.143, Loss: 15.52, Prop_loss: 7.52, U_loss: 6.69, YMSE: 0.20, DTrue: 0.13, DFalse: 0.99, PNorm: 985.15, GNorm: 17.86
+[183250] Prop_KL: 35.25, 20.97, Word: 95.13, Topo: 99.47, Assm: 95.64, Log_prior_y: -3.98
+[183250] Unsup_KL: 36.66, 20.98, Word: 95.10, Topo: 99.51, Assm: 95.56, U_kld_y: 0.33
+
+[183300] Beta: 0.143, Loss: 16.33, Prop_loss: 7.57, U_loss: 6.69, YMSE: 0.19, DTrue: 0.28, DFalse: 1.60, PNorm: 985.24, GNorm: 19.97
+[183300] Prop_KL: 35.74, 20.90, Word: 95.17, Topo: 99.51, Assm: 95.30, Log_prior_y: -4.00
+[183300] Unsup_KL: 36.23, 21.01, Word: 95.16, Topo: 99.46, Assm: 95.24, U_kld_y: 0.28
+
+[183350] Beta: 0.143, Loss: 14.70, Prop_loss: 7.41, U_loss: 6.79, YMSE: 0.19, DTrue: 0.07, DFalse: 0.25, PNorm: 985.32, GNorm: 13.20
+[183350] Prop_KL: 35.32, 21.02, Word: 95.43, Topo: 99.58, Assm: 94.65, Log_prior_y: -3.94
+[183350] Unsup_KL: 36.18, 20.96, Word: 94.83, Topo: 99.44, Assm: 94.88, U_kld_y: 0.31
+
+fn  zinc310k-processed/frac0.5/prop-tensors-0.pkl zinc310k-processed/frac0.5/u-tensors-1.pkl
+Before load
+Loaded
+[183400] Beta: 0.143, Loss: 15.35, Prop_loss: 7.51, U_loss: 6.70, YMSE: 0.19, DTrue: 0.11, DFalse: 0.83, PNorm: 985.43, GNorm: 17.60
+[183400] Prop_KL: 35.66, 20.13, Word: 95.31, Topo: 99.43, Assm: 95.55, Log_prior_y: -3.97
+[183400] Unsup_KL: 36.38, 20.09, Word: 95.36, Topo: 99.44, Assm: 94.62, U_kld_y: 0.31
+
+[183450] Beta: 0.143, Loss: 17.56, Prop_loss: 7.53, U_loss: 6.70, YMSE: 0.19, DTrue: 0.19, DFalse: 2.94, PNorm: 985.53, GNorm: 30.61
+[183450] Prop_KL: 35.78, 19.80, Word: 95.19, Topo: 99.55, Assm: 94.48, Log_prior_y: -3.97
+[183450] Unsup_KL: 36.54, 19.85, Word: 95.22, Topo: 99.42, Assm: 94.67, U_kld_y: 0.32
+
+[183500] Beta: 0.143, Loss: 15.43, Prop_loss: 7.50, U_loss: 6.63, YMSE: 0.20, DTrue: 0.12, DFalse: 0.98, PNorm: 985.64, GNorm: 13.03
+[183500] Prop_KL: 36.63, 19.99, Word: 95.04, Topo: 99.46, Assm: 95.67, Log_prior_y: -3.87
+[183500] Unsup_KL: 36.59, 20.06, Word: 95.30, Topo: 99.46, Assm: 95.47, U_kld_y: 0.28
+
+[183550] Beta: 0.143, Loss: 16.29, Prop_loss: 7.47, U_loss: 6.74, YMSE: 0.19, DTrue: 0.15, DFalse: 1.75, PNorm: 985.74, GNorm: 50.00
+[183550] Prop_KL: 35.64, 19.89, Word: 95.16, Topo: 99.52, Assm: 94.20, Log_prior_y: -3.91
+[183550] Unsup_KL: 36.70, 20.01, Word: 95.15, Topo: 99.48, Assm: 94.96, U_kld_y: 0.31
+
+[183600] Beta: 0.143, Loss: 16.02, Prop_loss: 7.40, U_loss: 6.70, YMSE: 0.21, DTrue: 0.17, DFalse: 1.54, PNorm: 985.84, GNorm: 25.04
+[183600] Prop_KL: 35.92, 20.61, Word: 95.42, Topo: 99.57, Assm: 95.88, Log_prior_y: -3.97
+[183600] Unsup_KL: 36.86, 20.54, Word: 94.91, Topo: 99.46, Assm: 95.12, U_kld_y: 0.31
+
+[183650] Beta: 0.143, Loss: 16.96, Prop_loss: 7.51, U_loss: 6.75, YMSE: 0.19, DTrue: 0.10, DFalse: 2.40, PNorm: 985.94, GNorm: 16.97
+[183650] Prop_KL: 36.04, 21.01, Word: 95.63, Topo: 99.50, Assm: 95.46, Log_prior_y: -3.98
+[183650] Unsup_KL: 36.77, 21.04, Word: 94.80, Topo: 99.49, Assm: 95.49, U_kld_y: 0.30
+
+[183700] Beta: 0.143, Loss: 15.25, Prop_loss: 7.33, U_loss: 6.61, YMSE: 0.19, DTrue: 0.14, DFalse: 0.99, PNorm: 986.05, GNorm: 35.10
+[183700] Prop_KL: 35.59, 19.94, Word: 95.44, Topo: 99.49, Assm: 95.50, Log_prior_y: -3.94
+[183700] Unsup_KL: 36.09, 19.96, Word: 94.95, Topo: 99.48, Assm: 95.49, U_kld_y: 0.31
+
+[183750] Beta: 0.143, Loss: 16.29, Prop_loss: 7.42, U_loss: 6.67, YMSE: 0.19, DTrue: 0.16, DFalse: 1.84, PNorm: 986.14, GNorm: 21.38
+[183750] Prop_KL: 35.68, 20.47, Word: 95.50, Topo: 99.51, Assm: 95.42, Log_prior_y: -3.99
+[183750] Unsup_KL: 36.52, 20.41, Word: 95.21, Topo: 99.46, Assm: 95.41, U_kld_y: 0.31
+
+[183800] Beta: 0.143, Loss: 15.01, Prop_loss: 7.53, U_loss: 6.80, YMSE: 0.19, DTrue: 0.11, DFalse: 0.38, PNorm: 986.25, GNorm: 23.56
+[183800] Prop_KL: 35.97, 20.60, Word: 95.17, Topo: 99.52, Assm: 95.05, Log_prior_y: -3.91
+[183800] Unsup_KL: 36.45, 20.68, Word: 94.77, Topo: 99.52, Assm: 94.38, U_kld_y: 0.29
+
+[183850] Beta: 0.143, Loss: 16.19, Prop_loss: 7.55, U_loss: 6.60, YMSE: 0.19, DTrue: 0.15, DFalse: 1.71, PNorm: 986.34, GNorm: 15.43
+[183850] Prop_KL: 35.93, 20.76, Word: 95.43, Topo: 99.52, Assm: 95.73, Log_prior_y: -3.98
+[183850] Unsup_KL: 36.14, 20.66, Word: 95.41, Topo: 99.53, Assm: 95.36, U_kld_y: 0.30
+
+[183900] Beta: 0.143, Loss: 14.81, Prop_loss: 7.36, U_loss: 6.57, YMSE: 0.18, DTrue: 0.12, DFalse: 0.58, PNorm: 986.44, GNorm: 22.24
+[183900] Prop_KL: 35.25, 20.24, Word: 95.28, Topo: 99.48, Assm: 95.70, Log_prior_y: -3.98
+[183900] Unsup_KL: 35.99, 20.15, Word: 95.04, Topo: 99.44, Assm: 96.02, U_kld_y: 0.32
+
+[183950] Beta: 0.143, Loss: 17.60, Prop_loss: 7.39, U_loss: 6.61, YMSE: 0.19, DTrue: 0.15, DFalse: 3.27, PNorm: 986.53, GNorm: 50.00
+[183950] Prop_KL: 35.44, 19.77, Word: 95.22, Topo: 99.59, Assm: 95.40, Log_prior_y: -3.97
+[183950] Unsup_KL: 36.07, 19.84, Word: 95.17, Topo: 99.52, Assm: 95.67, U_kld_y: 0.29
+
+[184000] Beta: 0.143, Loss: 16.14, Prop_loss: 7.57, U_loss: 6.65, YMSE: 0.19, DTrue: 0.22, DFalse: 1.51, PNorm: 986.66, GNorm: 23.95
+[184000] Prop_KL: 35.19, 20.54, Word: 94.89, Topo: 99.52, Assm: 95.91, Log_prior_y: -3.99
+[184000] Unsup_KL: 35.58, 20.62, Word: 95.03, Topo: 99.47, Assm: 94.70, U_kld_y: 0.33
+
+[184050] Beta: 0.144, Loss: 16.94, Prop_loss: 7.41, U_loss: 6.66, YMSE: 0.21, DTrue: 0.18, DFalse: 2.49, PNorm: 986.77, GNorm: 18.78
+[184050] Prop_KL: 35.44, 20.57, Word: 95.33, Topo: 99.47, Assm: 95.66, Log_prior_y: -3.93
+[184050] Unsup_KL: 36.10, 20.45, Word: 95.04, Topo: 99.44, Assm: 95.03, U_kld_y: 0.27
+
+[184100] Beta: 0.144, Loss: 15.61, Prop_loss: 7.50, U_loss: 6.82, YMSE: 0.18, DTrue: 0.10, DFalse: 1.00, PNorm: 986.90, GNorm: 19.30
+[184100] Prop_KL: 35.20, 21.03, Word: 95.20, Topo: 99.52, Assm: 94.56, Log_prior_y: -3.93
+[184100] Unsup_KL: 36.12, 20.97, Word: 94.92, Topo: 99.38, Assm: 95.30, U_kld_y: 0.31
+
+[184150] Beta: 0.144, Loss: 16.68, Prop_loss: 7.53, U_loss: 6.73, YMSE: 0.18, DTrue: 0.21, DFalse: 2.02, PNorm: 987.00, GNorm: 17.71
+[184150] Prop_KL: 35.54, 20.51, Word: 95.08, Topo: 99.49, Assm: 95.76, Log_prior_y: -3.95
+[184150] Unsup_KL: 36.27, 20.50, Word: 94.81, Topo: 99.46, Assm: 96.07, U_kld_y: 0.33
+
+[184200] Beta: 0.144, Loss: 15.27, Prop_loss: 7.48, U_loss: 6.59, YMSE: 0.21, DTrue: 0.16, DFalse: 0.84, PNorm: 987.09, GNorm: 19.43
+[184200] Prop_KL: 35.93, 20.65, Word: 95.53, Topo: 99.57, Assm: 95.30, Log_prior_y: -3.97
+[184200] Unsup_KL: 36.31, 20.65, Word: 95.36, Topo: 99.55, Assm: 95.72, U_kld_y: 0.27
+
+fn  zinc310k-processed/frac0.5/prop-tensors-3.pkl zinc310k-processed/frac0.5/u-tensors-2.pkl
+Before load
+Loaded
+[184250] Beta: 0.144, Loss: 17.72, Prop_loss: 7.58, U_loss: 6.65, YMSE: 0.19, DTrue: 0.14, DFalse: 3.16, PNorm: 987.18, GNorm: 50.00
+[184250] Prop_KL: 35.88, 20.51, Word: 95.15, Topo: 99.52, Assm: 94.79, Log_prior_y: -3.89
+[184250] Unsup_KL: 36.14, 20.62, Word: 95.17, Topo: 99.45, Assm: 95.53, U_kld_y: 0.33
+
+[184300] Beta: 0.144, Loss: 18.16, Prop_loss: 7.56, U_loss: 6.76, YMSE: 0.20, DTrue: 0.20, DFalse: 3.44, PNorm: 987.28, GNorm: 17.36
+[184300] Prop_KL: 35.64, 20.77, Word: 95.41, Topo: 99.48, Assm: 95.17, Log_prior_y: -3.94
+[184300] Unsup_KL: 36.21, 20.86, Word: 94.84, Topo: 99.47, Assm: 94.51, U_kld_y: 0.32
+
+[184350] Beta: 0.144, Loss: 15.19, Prop_loss: 7.61, U_loss: 6.68, YMSE: 0.20, DTrue: 0.09, DFalse: 0.61, PNorm: 987.38, GNorm: 50.00
+[184350] Prop_KL: 35.88, 21.20, Word: 94.98, Topo: 99.48, Assm: 95.14, Log_prior_y: -3.91
+[184350] Unsup_KL: 35.81, 21.13, Word: 94.98, Topo: 99.43, Assm: 94.99, U_kld_y: 0.31
+
+[184400] Beta: 0.144, Loss: 15.05, Prop_loss: 7.51, U_loss: 6.79, YMSE: 0.19, DTrue: 0.15, DFalse: 0.40, PNorm: 987.46, GNorm: 21.27
+[184400] Prop_KL: 35.65, 20.95, Word: 95.16, Topo: 99.46, Assm: 95.22, Log_prior_y: -3.89
+[184400] Unsup_KL: 36.34, 20.95, Word: 94.71, Topo: 99.44, Assm: 95.15, U_kld_y: 0.33
+
+[184450] Beta: 0.144, Loss: 16.25, Prop_loss: 7.58, U_loss: 6.53, YMSE: 0.20, DTrue: 0.12, DFalse: 1.82, PNorm: 987.56, GNorm: 18.00
+[184450] Prop_KL: 35.95, 20.21, Word: 95.23, Topo: 99.41, Assm: 95.43, Log_prior_y: -3.97
+[184450] Unsup_KL: 36.13, 20.31, Word: 95.49, Topo: 99.43, Assm: 96.01, U_kld_y: 0.32
+
+[184500] Beta: 0.144, Loss: 14.80, Prop_loss: 7.54, U_loss: 6.59, YMSE: 0.19, DTrue: 0.14, DFalse: 0.34, PNorm: 987.67, GNorm: 19.73
+[184500] Prop_KL: 35.48, 19.68, Word: 95.10, Topo: 99.42, Assm: 95.26, Log_prior_y: -4.07
+[184500] Unsup_KL: 36.21, 19.59, Word: 95.00, Topo: 99.50, Assm: 94.96, U_kld_y: 0.34
+
+[184550] Beta: 0.144, Loss: 16.12, Prop_loss: 7.45, U_loss: 6.64, YMSE: 0.18, DTrue: 0.14, DFalse: 1.72, PNorm: 987.78, GNorm: 21.65
+[184550] Prop_KL: 35.65, 19.36, Word: 95.13, Topo: 99.48, Assm: 95.17, Log_prior_y: -3.90
+[184550] Unsup_KL: 36.54, 19.37, Word: 95.12, Topo: 99.53, Assm: 95.04, U_kld_y: 0.31
+
+[184600] Beta: 0.144, Loss: 15.18, Prop_loss: 7.53, U_loss: 6.60, YMSE: 0.19, DTrue: 0.18, DFalse: 0.67, PNorm: 987.88, GNorm: 21.98
+[184600] Prop_KL: 36.35, 19.73, Word: 95.21, Topo: 99.48, Assm: 96.27, Log_prior_y: -3.96
+[184600] Unsup_KL: 36.71, 19.83, Word: 95.46, Topo: 99.54, Assm: 94.98, U_kld_y: 0.29
+
+[184650] Beta: 0.144, Loss: 15.50, Prop_loss: 7.42, U_loss: 6.71, YMSE: 0.18, DTrue: 0.14, DFalse: 1.04, PNorm: 987.98, GNorm: 19.56
+[184650] Prop_KL: 35.50, 19.27, Word: 95.08, Topo: 99.52, Assm: 95.54, Log_prior_y: -4.05
+[184650] Unsup_KL: 36.43, 19.40, Word: 95.12, Topo: 99.38, Assm: 95.21, U_kld_y: 0.35
+
+[184700] Beta: 0.144, Loss: 18.56, Prop_loss: 7.54, U_loss: 6.68, YMSE: 0.18, DTrue: 0.72, DFalse: 3.43, PNorm: 988.07, GNorm: 50.00
+[184700] Prop_KL: 35.77, 20.23, Word: 95.49, Topo: 99.41, Assm: 94.67, Log_prior_y: -3.95
+[184700] Unsup_KL: 36.15, 20.41, Word: 95.04, Topo: 99.44, Assm: 94.85, U_kld_y: 0.30
+
+[184750] Beta: 0.144, Loss: 16.02, Prop_loss: 7.62, U_loss: 6.78, YMSE: 0.20, DTrue: 0.14, DFalse: 1.29, PNorm: 988.17, GNorm: 50.00
+[184750] Prop_KL: 35.93, 20.59, Word: 95.20, Topo: 99.43, Assm: 94.87, Log_prior_y: -3.95
+[184750] Unsup_KL: 36.51, 20.63, Word: 95.12, Topo: 99.42, Assm: 94.50, U_kld_y: 0.33
+
+[184800] Beta: 0.144, Loss: 16.22, Prop_loss: 7.62, U_loss: 6.71, YMSE: 0.19, DTrue: 0.18, DFalse: 1.53, PNorm: 988.28, GNorm: 14.23
+[184800] Prop_KL: 35.64, 20.80, Word: 95.50, Topo: 99.44, Assm: 95.18, Log_prior_y: -4.08
+[184800] Unsup_KL: 36.42, 20.76, Word: 95.15, Topo: 99.53, Assm: 95.61, U_kld_y: 0.33
+
+[184850] Beta: 0.144, Loss: 14.85, Prop_loss: 7.56, U_loss: 6.74, YMSE: 0.18, DTrue: 0.09, DFalse: 0.29, PNorm: 988.38, GNorm: 19.11
+[184850] Prop_KL: 36.13, 20.56, Word: 95.46, Topo: 99.50, Assm: 96.30, Log_prior_y: -3.96
+[184850] Unsup_KL: 36.46, 20.62, Word: 95.03, Topo: 99.58, Assm: 94.67, U_kld_y: 0.31
+
+[184900] Beta: 0.144, Loss: 15.78, Prop_loss: 7.56, U_loss: 6.71, YMSE: 0.18, DTrue: 0.15, DFalse: 1.18, PNorm: 988.47, GNorm: 22.15
+[184900] Prop_KL: 35.49, 20.62, Word: 95.29, Topo: 99.37, Assm: 95.45, Log_prior_y: -3.91
+[184900] Unsup_KL: 36.04, 20.68, Word: 94.92, Topo: 99.49, Assm: 95.23, U_kld_y: 0.30
+
+[184950] Beta: 0.144, Loss: 16.05, Prop_loss: 7.54, U_loss: 6.81, YMSE: 0.19, DTrue: 0.12, DFalse: 1.38, PNorm: 988.56, GNorm: 23.67
+[184950] Prop_KL: 35.34, 21.43, Word: 95.42, Topo: 99.52, Assm: 94.26, Log_prior_y: -3.93
+[184950] Unsup_KL: 36.54, 21.49, Word: 95.06, Topo: 99.44, Assm: 94.71, U_kld_y: 0.28
+
+[185000] Beta: 0.144, Loss: 15.25, Prop_loss: 7.54, U_loss: 6.81, YMSE: 0.19, DTrue: 0.17, DFalse: 0.54, PNorm: 988.66, GNorm: 17.55
+[185000] Prop_KL: 35.60, 20.92, Word: 95.24, Topo: 99.57, Assm: 95.11, Log_prior_y: -4.03
+[185000] Unsup_KL: 36.64, 21.09, Word: 95.38, Topo: 99.42, Assm: 94.67, U_kld_y: 0.34
+
+[185050] Beta: 0.145, Loss: 16.15, Prop_loss: 7.71, U_loss: 6.75, YMSE: 0.19, DTrue: 0.11, DFalse: 1.40, PNorm: 988.77, GNorm: 15.68
+[185050] Prop_KL: 35.56, 21.06, Word: 95.09, Topo: 99.47, Assm: 95.03, Log_prior_y: -4.05
+[185050] Unsup_KL: 36.23, 21.15, Word: 95.04, Topo: 99.47, Assm: 95.86, U_kld_y: 0.30
+
+[185100] Beta: 0.145, Loss: 16.13, Prop_loss: 7.59, U_loss: 6.85, YMSE: 0.19, DTrue: 0.29, DFalse: 1.21, PNorm: 988.88, GNorm: 16.98
+[185100] Prop_KL: 36.21, 20.96, Word: 95.25, Topo: 99.53, Assm: 95.51, Log_prior_y: -4.03
+[185100] Unsup_KL: 36.69, 21.08, Word: 94.99, Topo: 99.49, Assm: 95.16, U_kld_y: 0.32
+
+fn  zinc310k-processed/frac0.5/prop-tensors-4.pkl zinc310k-processed/frac0.5/u-tensors-5.pkl
+Before load
+Loaded
+[185150] Beta: 0.145, Loss: 15.99, Prop_loss: 7.47, U_loss: 6.68, YMSE: 0.19, DTrue: 0.16, DFalse: 1.50, PNorm: 988.98, GNorm: 18.51
+[185150] Prop_KL: 35.20, 20.87, Word: 95.51, Topo: 99.56, Assm: 95.84, Log_prior_y: -3.94
+[185150] Unsup_KL: 36.07, 20.85, Word: 95.22, Topo: 99.41, Assm: 95.31, U_kld_y: 0.30
+
+[185200] Beta: 0.145, Loss: 16.42, Prop_loss: 7.55, U_loss: 6.77, YMSE: 0.19, DTrue: 0.23, DFalse: 1.68, PNorm: 989.09, GNorm: 14.35
+[185200] Prop_KL: 35.41, 20.60, Word: 95.31, Topo: 99.46, Assm: 95.21, Log_prior_y: -3.95
+[185200] Unsup_KL: 36.21, 20.68, Word: 94.76, Topo: 99.50, Assm: 95.32, U_kld_y: 0.31
+
+[185250] Beta: 0.145, Loss: 15.40, Prop_loss: 7.63, U_loss: 6.77, YMSE: 0.20, DTrue: 0.10, DFalse: 0.71, PNorm: 989.20, GNorm: 15.02
+[185250] Prop_KL: 35.37, 20.93, Word: 95.01, Topo: 99.59, Assm: 95.51, Log_prior_y: -4.04
+[185250] Unsup_KL: 36.08, 20.82, Word: 95.16, Topo: 99.51, Assm: 95.02, U_kld_y: 0.35
+
+[185300] Beta: 0.145, Loss: 15.95, Prop_loss: 7.47, U_loss: 6.75, YMSE: 0.19, DTrue: 0.10, DFalse: 1.44, PNorm: 989.31, GNorm: 24.35
+[185300] Prop_KL: 35.12, 20.38, Word: 95.37, Topo: 99.57, Assm: 95.48, Log_prior_y: -3.97
+[185300] Unsup_KL: 36.32, 20.34, Word: 94.98, Topo: 99.51, Assm: 95.27, U_kld_y: 0.29
+
+[185350] Beta: 0.145, Loss: 17.18, Prop_loss: 7.65, U_loss: 6.73, YMSE: 0.19, DTrue: 0.15, DFalse: 2.47, PNorm: 989.41, GNorm: 20.90
+[185350] Prop_KL: 36.10, 21.13, Word: 95.25, Topo: 99.50, Assm: 95.17, Log_prior_y: -4.00
+[185350] Unsup_KL: 36.87, 21.05, Word: 95.35, Topo: 99.46, Assm: 95.91, U_kld_y: 0.30
+
+[185400] Beta: 0.145, Loss: 16.86, Prop_loss: 7.65, U_loss: 6.73, YMSE: 0.20, DTrue: 0.18, DFalse: 2.10, PNorm: 989.52, GNorm: 15.15
+[185400] Prop_KL: 35.41, 21.62, Word: 95.24, Topo: 99.45, Assm: 94.94, Log_prior_y: -3.90
+[185400] Unsup_KL: 36.06, 21.66, Word: 95.07, Topo: 99.43, Assm: 95.56, U_kld_y: 0.30
+
+[185450] Beta: 0.145, Loss: 15.74, Prop_loss: 7.60, U_loss: 6.88, YMSE: 0.20, DTrue: 0.10, DFalse: 0.98, PNorm: 989.61, GNorm: 18.28
+[185450] Prop_KL: 35.97, 21.19, Word: 95.18, Topo: 99.54, Assm: 95.58, Log_prior_y: -3.95
+[185450] Unsup_KL: 36.34, 21.28, Word: 94.83, Topo: 99.51, Assm: 95.19, U_kld_y: 0.32
+
+[185500] Beta: 0.145, Loss: 16.85, Prop_loss: 7.50, U_loss: 6.72, YMSE: 0.18, DTrue: 0.18, DFalse: 2.27, PNorm: 989.71, GNorm: 17.69
+[185500] Prop_KL: 34.98, 21.24, Word: 95.31, Topo: 99.57, Assm: 95.27, Log_prior_y: -3.95
+[185500] Unsup_KL: 35.87, 21.18, Word: 95.31, Topo: 99.44, Assm: 95.49, U_kld_y: 0.32
+
+[185550] Beta: 0.145, Loss: 16.07, Prop_loss: 7.57, U_loss: 6.90, YMSE: 0.19, DTrue: 0.13, DFalse: 1.28, PNorm: 989.81, GNorm: 16.51
+[185550] Prop_KL: 35.71, 21.08, Word: 95.38, Topo: 99.49, Assm: 94.92, Log_prior_y: -3.98
+[185550] Unsup_KL: 36.74, 21.08, Word: 95.12, Topo: 99.40, Assm: 94.68, U_kld_y: 0.33
+
+[185600] Beta: 0.145, Loss: 15.49, Prop_loss: 7.66, U_loss: 6.71, YMSE: 0.20, DTrue: 0.17, DFalse: 0.74, PNorm: 989.90, GNorm: 19.25
+[185600] Prop_KL: 35.81, 20.55, Word: 94.87, Topo: 99.48, Assm: 94.64, Log_prior_y: -3.99
+[185600] Unsup_KL: 35.79, 20.54, Word: 94.91, Topo: 99.40, Assm: 94.65, U_kld_y: 0.30
+
+[185650] Beta: 0.145, Loss: 17.31, Prop_loss: 7.54, U_loss: 6.81, YMSE: 0.20, DTrue: 0.18, DFalse: 2.57, PNorm: 990.00, GNorm: 19.57
+[185650] Prop_KL: 35.09, 20.53, Word: 95.23, Topo: 99.53, Assm: 94.73, Log_prior_y: -3.97
+[185650] Unsup_KL: 36.01, 20.53, Word: 95.07, Topo: 99.47, Assm: 94.94, U_kld_y: 0.33
+
+[185700] Beta: 0.145, Loss: 15.67, Prop_loss: 7.58, U_loss: 6.71, YMSE: 0.20, DTrue: 0.14, DFalse: 1.03, PNorm: 990.09, GNorm: 16.32
+[185700] Prop_KL: 35.54, 20.99, Word: 95.21, Topo: 99.49, Assm: 95.34, Log_prior_y: -3.97
+[185700] Unsup_KL: 35.79, 21.04, Word: 95.01, Topo: 99.53, Assm: 95.18, U_kld_y: 0.32
+
+[185750] Beta: 0.145, Loss: 15.85, Prop_loss: 7.65, U_loss: 6.87, YMSE: 0.19, DTrue: 0.15, DFalse: 0.99, PNorm: 990.19, GNorm: 17.92
+[185750] Prop_KL: 35.62, 20.92, Word: 95.24, Topo: 99.41, Assm: 95.06, Log_prior_y: -4.03
+[185750] Unsup_KL: 36.08, 20.94, Word: 95.05, Topo: 99.40, Assm: 94.42, U_kld_y: 0.37
+
+[185800] Beta: 0.145, Loss: 15.90, Prop_loss: 7.63, U_loss: 6.73, YMSE: 0.19, DTrue: 0.18, DFalse: 1.17, PNorm: 990.28, GNorm: 50.00
+[185800] Prop_KL: 35.63, 20.79, Word: 95.04, Topo: 99.58, Assm: 94.76, Log_prior_y: -3.93
+[185800] Unsup_KL: 36.66, 20.81, Word: 95.44, Topo: 99.47, Assm: 94.46, U_kld_y: 0.29
+
+[185850] Beta: 0.145, Loss: 17.94, Prop_loss: 7.61, U_loss: 6.83, YMSE: 0.19, DTrue: 0.35, DFalse: 2.97, PNorm: 990.38, GNorm: 27.87
+[185850] Prop_KL: 35.74, 21.01, Word: 95.13, Topo: 99.48, Assm: 95.04, Log_prior_y: -3.92
+[185850] Unsup_KL: 36.35, 20.98, Word: 95.33, Topo: 99.44, Assm: 94.79, U_kld_y: 0.35
+
+[185900] Beta: 0.145, Loss: 16.47, Prop_loss: 7.57, U_loss: 6.72, YMSE: 0.20, DTrue: 0.19, DFalse: 1.78, PNorm: 990.49, GNorm: 20.41
+[185900] Prop_KL: 35.56, 21.73, Word: 95.37, Topo: 99.54, Assm: 95.72, Log_prior_y: -3.97
+[185900] Unsup_KL: 35.88, 21.70, Word: 95.20, Topo: 99.55, Assm: 95.33, U_kld_y: 0.30
+
+[185950] Beta: 0.145, Loss: 15.84, Prop_loss: 7.52, U_loss: 6.76, YMSE: 0.19, DTrue: 0.13, DFalse: 1.24, PNorm: 990.58, GNorm: 15.48
+[185950] Prop_KL: 35.33, 21.64, Word: 95.61, Topo: 99.49, Assm: 95.36, Log_prior_y: -3.94
+[185950] Unsup_KL: 36.04, 21.69, Word: 95.38, Topo: 99.47, Assm: 95.33, U_kld_y: 0.30
+
+[186000] Beta: 0.145, Loss: 15.01, Prop_loss: 7.62, U_loss: 6.70, YMSE: 0.19, DTrue: 0.15, DFalse: 0.35, PNorm: 990.67, GNorm: 50.00
+[186000] Prop_KL: 35.45, 21.43, Word: 95.31, Topo: 99.53, Assm: 95.83, Log_prior_y: -4.00
+[186000] Unsup_KL: 35.68, 21.48, Word: 95.27, Topo: 99.49, Assm: 95.11, U_kld_y: 0.29
+
+fn  zinc310k-processed/frac0.5/prop-tensors-5.pkl zinc310k-processed/frac0.5/u-tensors-4.pkl
+Before load
+Loaded
+[186050] Beta: 0.146, Loss: 16.24, Prop_loss: 7.66, U_loss: 6.78, YMSE: 0.19, DTrue: 0.15, DFalse: 1.45, PNorm: 990.78, GNorm: 18.38
+[186050] Prop_KL: 35.93, 20.62, Word: 95.27, Topo: 99.43, Assm: 95.52, Log_prior_y: -4.03
+[186050] Unsup_KL: 36.63, 20.66, Word: 95.00, Topo: 99.44, Assm: 96.20, U_kld_y: 0.34
+
+[186100] Beta: 0.146, Loss: 16.34, Prop_loss: 7.53, U_loss: 6.82, YMSE: 0.19, DTrue: 0.11, DFalse: 1.68, PNorm: 990.89, GNorm: 18.19
+[186100] Prop_KL: 35.24, 20.50, Word: 95.51, Topo: 99.50, Assm: 95.26, Log_prior_y: -3.96
+[186100] Unsup_KL: 35.60, 20.42, Word: 94.81, Topo: 99.43, Assm: 94.94, U_kld_y: 0.32
+
+[186150] Beta: 0.146, Loss: 16.08, Prop_loss: 7.52, U_loss: 6.70, YMSE: 0.18, DTrue: 0.13, DFalse: 1.55, PNorm: 990.99, GNorm: 17.06
+[186150] Prop_KL: 35.51, 19.81, Word: 95.24, Topo: 99.46, Assm: 95.27, Log_prior_y: -3.93
+[186150] Unsup_KL: 36.03, 19.84, Word: 94.98, Topo: 99.45, Assm: 95.19, U_kld_y: 0.31
+
+[186200] Beta: 0.146, Loss: 18.39, Prop_loss: 7.61, U_loss: 6.75, YMSE: 0.19, DTrue: 0.17, DFalse: 3.67, PNorm: 991.09, GNorm: 20.83
+[186200] Prop_KL: 35.40, 19.67, Word: 95.12, Topo: 99.47, Assm: 94.55, Log_prior_y: -4.00
+[186200] Unsup_KL: 35.94, 19.67, Word: 94.90, Topo: 99.51, Assm: 94.30, U_kld_y: 0.32
+
+[186250] Beta: 0.146, Loss: 16.01, Prop_loss: 7.66, U_loss: 6.73, YMSE: 0.20, DTrue: 0.13, DFalse: 1.29, PNorm: 991.21, GNorm: 14.96
+[186250] Prop_KL: 35.93, 19.64, Word: 95.16, Topo: 99.42, Assm: 94.77, Log_prior_y: -4.02
+[186250] Unsup_KL: 36.04, 19.71, Word: 94.90, Topo: 99.44, Assm: 95.26, U_kld_y: 0.34
+
+[186300] Beta: 0.146, Loss: 16.38, Prop_loss: 7.67, U_loss: 6.83, YMSE: 0.22, DTrue: 0.22, DFalse: 1.45, PNorm: 991.32, GNorm: 17.16
+[186300] Prop_KL: 35.17, 20.50, Word: 95.07, Topo: 99.48, Assm: 94.49, Log_prior_y: -4.00
+[186300] Unsup_KL: 36.22, 20.52, Word: 94.91, Topo: 99.42, Assm: 94.45, U_kld_y: 0.30
+
+[186350] Beta: 0.146, Loss: 16.80, Prop_loss: 7.72, U_loss: 6.81, YMSE: 0.19, DTrue: 0.10, DFalse: 1.99, PNorm: 991.42, GNorm: 17.27
+[186350] Prop_KL: 35.50, 20.79, Word: 94.90, Topo: 99.47, Assm: 94.54, Log_prior_y: -3.94
+[186350] Unsup_KL: 36.13, 20.97, Word: 94.98, Topo: 99.42, Assm: 94.71, U_kld_y: 0.29
+
+[186400] Beta: 0.146, Loss: 15.00, Prop_loss: 7.51, U_loss: 6.73, YMSE: 0.20, DTrue: 0.13, DFalse: 0.43, PNorm: 991.53, GNorm: 18.89
+[186400] Prop_KL: 35.67, 20.67, Word: 95.50, Topo: 99.48, Assm: 94.77, Log_prior_y: -3.92
+[186400] Unsup_KL: 36.18, 20.60, Word: 95.26, Topo: 99.46, Assm: 95.40, U_kld_y: 0.33
+
+[186450] Beta: 0.146, Loss: 16.99, Prop_loss: 7.61, U_loss: 6.85, YMSE: 0.20, DTrue: 0.17, DFalse: 2.16, PNorm: 991.65, GNorm: 20.47
+[186450] Prop_KL: 35.40, 20.24, Word: 95.26, Topo: 99.51, Assm: 94.75, Log_prior_y: -4.07
+[186450] Unsup_KL: 36.23, 20.19, Word: 94.67, Topo: 99.46, Assm: 94.47, U_kld_y: 0.30
+
+[186500] Beta: 0.146, Loss: 16.60, Prop_loss: 7.51, U_loss: 6.91, YMSE: 0.19, DTrue: 0.16, DFalse: 1.82, PNorm: 991.75, GNorm: 20.17
+[186500] Prop_KL: 35.38, 20.48, Word: 95.40, Topo: 99.59, Assm: 95.63, Log_prior_y: -3.98
+[186500] Unsup_KL: 35.99, 20.45, Word: 94.68, Topo: 99.44, Assm: 94.54, U_kld_y: 0.35
+
+[186550] Beta: 0.146, Loss: 17.71, Prop_loss: 7.68, U_loss: 6.81, YMSE: 0.20, DTrue: 0.15, DFalse: 2.87, PNorm: 991.83, GNorm: 22.92
+[186550] Prop_KL: 35.42, 20.97, Word: 94.80, Topo: 99.53, Assm: 94.27, Log_prior_y: -3.95
+[186550] Unsup_KL: 36.42, 20.97, Word: 95.26, Topo: 99.47, Assm: 95.74, U_kld_y: 0.32
+
+[186600] Beta: 0.146, Loss: 15.30, Prop_loss: 7.64, U_loss: 6.81, YMSE: 0.19, DTrue: 0.16, DFalse: 0.49, PNorm: 991.96, GNorm: 17.00
+[186600] Prop_KL: 35.30, 21.72, Word: 95.32, Topo: 99.45, Assm: 95.18, Log_prior_y: -3.95
+[186600] Unsup_KL: 35.96, 21.71, Word: 95.24, Topo: 99.48, Assm: 94.70, U_kld_y: 0.30
+
+[186650] Beta: 0.146, Loss: 17.16, Prop_loss: 7.70, U_loss: 6.95, YMSE: 0.20, DTrue: 0.16, DFalse: 2.16, PNorm: 992.07, GNorm: 26.81
+[186650] Prop_KL: 35.85, 21.10, Word: 95.38, Topo: 99.39, Assm: 95.70, Log_prior_y: -3.97
+[186650] Unsup_KL: 36.60, 21.03, Word: 95.01, Topo: 99.49, Assm: 95.41, U_kld_y: 0.31
+
+[186700] Beta: 0.146, Loss: 15.84, Prop_loss: 7.77, U_loss: 6.79, YMSE: 0.18, DTrue: 0.10, DFalse: 0.99, PNorm: 992.16, GNorm: 22.19
+[186700] Prop_KL: 36.08, 20.48, Word: 95.14, Topo: 99.34, Assm: 94.01, Log_prior_y: -4.04
+[186700] Unsup_KL: 36.50, 20.45, Word: 94.93, Topo: 99.41, Assm: 95.74, U_kld_y: 0.35
+
+[186750] Beta: 0.146, Loss: 18.55, Prop_loss: 7.69, U_loss: 6.83, YMSE: 0.20, DTrue: 0.20, DFalse: 3.62, PNorm: 992.27, GNorm: 36.91
+[186750] Prop_KL: 36.04, 20.36, Word: 94.96, Topo: 99.43, Assm: 94.92, Log_prior_y: -3.99
+[186750] Unsup_KL: 36.28, 20.40, Word: 94.47, Topo: 99.49, Assm: 94.46, U_kld_y: 0.30
+
+[186800] Beta: 0.146, Loss: 15.74, Prop_loss: 7.66, U_loss: 6.78, YMSE: 0.21, DTrue: 0.12, DFalse: 0.97, PNorm: 992.38, GNorm: 21.14
+[186800] Prop_KL: 35.52, 21.04, Word: 95.09, Topo: 99.53, Assm: 94.55, Log_prior_y: -3.92
+[186800] Unsup_KL: 36.57, 20.97, Word: 95.04, Topo: 99.45, Assm: 94.88, U_kld_y: 0.26
+
+[186850] Beta: 0.146, Loss: 15.63, Prop_loss: 7.58, U_loss: 6.90, YMSE: 0.18, DTrue: 0.16, DFalse: 0.81, PNorm: 992.48, GNorm: 16.94
+[186850] Prop_KL: 35.08, 21.14, Word: 95.34, Topo: 99.40, Assm: 95.11, Log_prior_y: -3.95
+[186850] Unsup_KL: 35.92, 21.12, Word: 94.65, Topo: 99.38, Assm: 94.48, U_kld_y: 0.35
+
+[186900] Beta: 0.146, Loss: 15.02, Prop_loss: 7.52, U_loss: 6.73, YMSE: 0.19, DTrue: 0.13, DFalse: 0.46, PNorm: 992.61, GNorm: 22.09
+[186900] Prop_KL: 36.15, 20.75, Word: 95.68, Topo: 99.54, Assm: 95.64, Log_prior_y: -3.93
+[186900] Unsup_KL: 36.36, 20.71, Word: 95.31, Topo: 99.48, Assm: 95.95, U_kld_y: 0.32
+
+fn  zinc310k-processed/frac0.5/prop-tensors-2.pkl zinc310k-processed/frac0.5/u-tensors-3.pkl
+Before load
+Loaded
+[186950] Beta: 0.146, Loss: 15.73, Prop_loss: 7.62, U_loss: 6.80, YMSE: 0.19, DTrue: 0.12, DFalse: 0.99, PNorm: 992.71, GNorm: 24.36
+[186950] Prop_KL: 35.33, 20.26, Word: 95.09, Topo: 99.41, Assm: 94.62, Log_prior_y: -3.97
+[186950] Unsup_KL: 36.39, 20.30, Word: 94.76, Topo: 99.48, Assm: 94.91, U_kld_y: 0.32
+
+[187000] Beta: 0.146, Loss: 16.06, Prop_loss: 7.60, U_loss: 6.81, YMSE: 0.20, DTrue: 0.17, DFalse: 1.28, PNorm: 992.81, GNorm: 18.43
+[187000] Prop_KL: 35.42, 20.93, Word: 95.42, Topo: 99.50, Assm: 95.19, Log_prior_y: -3.94
+[187000] Unsup_KL: 35.68, 20.90, Word: 94.84, Topo: 99.46, Assm: 95.08, U_kld_y: 0.35
+
+[187050] Beta: 0.147, Loss: 15.95, Prop_loss: 7.66, U_loss: 6.76, YMSE: 0.20, DTrue: 0.33, DFalse: 1.01, PNorm: 992.92, GNorm: 16.11
+[187050] Prop_KL: 35.13, 20.61, Word: 94.91, Topo: 99.46, Assm: 96.14, Log_prior_y: -4.02
+[187050] Unsup_KL: 36.14, 20.67, Word: 95.06, Topo: 99.49, Assm: 95.92, U_kld_y: 0.32
+
+[187100] Beta: 0.147, Loss: 15.81, Prop_loss: 7.49, U_loss: 6.83, YMSE: 0.19, DTrue: 0.08, DFalse: 1.23, PNorm: 993.02, GNorm: 16.31
+[187100] Prop_KL: 35.30, 20.15, Word: 95.24, Topo: 99.45, Assm: 96.08, Log_prior_y: -3.95
+[187100] Unsup_KL: 35.92, 20.13, Word: 94.74, Topo: 99.45, Assm: 95.25, U_kld_y: 0.32
+
+[187150] Beta: 0.147, Loss: 17.80, Prop_loss: 7.67, U_loss: 6.93, YMSE: 0.18, DTrue: 0.21, DFalse: 2.80, PNorm: 993.11, GNorm: 17.16
+[187150] Prop_KL: 35.47, 19.82, Word: 95.09, Topo: 99.42, Assm: 94.60, Log_prior_y: -3.92
+[187150] Unsup_KL: 35.96, 19.99, Word: 94.52, Topo: 99.43, Assm: 94.49, U_kld_y: 0.38
+
+[187200] Beta: 0.147, Loss: 16.30, Prop_loss: 7.63, U_loss: 6.87, YMSE: 0.18, DTrue: 0.14, DFalse: 1.47, PNorm: 993.22, GNorm: 17.75
+[187200] Prop_KL: 34.62, 20.88, Word: 95.03, Topo: 99.49, Assm: 94.98, Log_prior_y: -3.95
+[187200] Unsup_KL: 35.76, 20.91, Word: 95.04, Topo: 99.33, Assm: 95.06, U_kld_y: 0.31
+
+[187250] Beta: 0.147, Loss: 15.71, Prop_loss: 7.76, U_loss: 6.93, YMSE: 0.20, DTrue: 0.12, DFalse: 0.69, PNorm: 993.32, GNorm: 16.72
+[187250] Prop_KL: 35.66, 20.33, Word: 95.06, Topo: 99.44, Assm: 94.91, Log_prior_y: -4.05
+[187250] Unsup_KL: 36.00, 20.45, Word: 94.66, Topo: 99.36, Assm: 94.40, U_kld_y: 0.35
+
+[187300] Beta: 0.147, Loss: 17.84, Prop_loss: 7.72, U_loss: 6.76, YMSE: 0.20, DTrue: 0.16, DFalse: 3.01, PNorm: 993.44, GNorm: 30.53
+[187300] Prop_KL: 35.34, 19.79, Word: 94.78, Topo: 99.43, Assm: 94.65, Log_prior_y: -4.03
+[187300] Unsup_KL: 35.90, 19.80, Word: 94.98, Topo: 99.49, Assm: 95.00, U_kld_y: 0.33
+
+[187350] Beta: 0.147, Loss: 15.43, Prop_loss: 7.68, U_loss: 6.77, YMSE: 0.19, DTrue: 0.12, DFalse: 0.67, PNorm: 993.54, GNorm: 50.00
+[187350] Prop_KL: 35.40, 20.29, Word: 95.05, Topo: 99.48, Assm: 94.54, Log_prior_y: -4.01
+[187350] Unsup_KL: 36.03, 20.27, Word: 94.97, Topo: 99.51, Assm: 94.38, U_kld_y: 0.37
+
+[187400] Beta: 0.147, Loss: 17.46, Prop_loss: 7.71, U_loss: 6.91, YMSE: 0.19, DTrue: 0.16, DFalse: 2.49, PNorm: 993.65, GNorm: 23.65
+[187400] Prop_KL: 35.72, 20.52, Word: 95.30, Topo: 99.39, Assm: 95.25, Log_prior_y: -4.00
+[187400] Unsup_KL: 35.97, 20.59, Word: 94.68, Topo: 99.44, Assm: 95.01, U_kld_y: 0.33
+
+[187450] Beta: 0.147, Loss: 17.40, Prop_loss: 7.82, U_loss: 6.91, YMSE: 0.23, DTrue: 0.13, DFalse: 2.30, PNorm: 993.73, GNorm: 29.05
+[187450] Prop_KL: 35.66, 20.78, Word: 94.78, Topo: 99.45, Assm: 95.14, Log_prior_y: -4.08
+[187450] Unsup_KL: 36.08, 20.84, Word: 94.58, Topo: 99.33, Assm: 94.73, U_kld_y: 0.31
+
+[187500] Beta: 0.147, Loss: 16.15, Prop_loss: 7.61, U_loss: 6.79, YMSE: 0.21, DTrue: 0.23, DFalse: 1.30, PNorm: 993.84, GNorm: 20.83
+[187500] Prop_KL: 34.96, 20.57, Word: 95.08, Topo: 99.49, Assm: 95.13, Log_prior_y: -3.96
+[187500] Unsup_KL: 35.76, 20.64, Word: 94.96, Topo: 99.51, Assm: 94.91, U_kld_y: 0.30
+
+[187550] Beta: 0.147, Loss: 15.54, Prop_loss: 7.73, U_loss: 6.74, YMSE: 0.19, DTrue: 0.10, DFalse: 0.78, PNorm: 993.93, GNorm: 26.96
+[187550] Prop_KL: 35.75, 20.53, Word: 94.78, Topo: 99.50, Assm: 95.43, Log_prior_y: -3.95
+[187550] Unsup_KL: 36.52, 20.62, Word: 95.14, Topo: 99.43, Assm: 95.55, U_kld_y: 0.31
+
+[187600] Beta: 0.147, Loss: 17.14, Prop_loss: 7.65, U_loss: 6.84, YMSE: 0.21, DTrue: 0.17, DFalse: 2.28, PNorm: 994.05, GNorm: 29.07
+[187600] Prop_KL: 35.28, 20.13, Word: 94.93, Topo: 99.40, Assm: 95.58, Log_prior_y: -3.94
+[187600] Unsup_KL: 36.13, 20.19, Word: 94.93, Topo: 99.42, Assm: 95.30, U_kld_y: 0.30
+
+[187650] Beta: 0.147, Loss: 16.89, Prop_loss: 7.65, U_loss: 6.81, YMSE: 0.18, DTrue: 0.16, DFalse: 2.09, PNorm: 994.15, GNorm: 15.78
+[187650] Prop_KL: 35.18, 20.30, Word: 95.17, Topo: 99.45, Assm: 94.89, Log_prior_y: -3.94
+[187650] Unsup_KL: 36.16, 20.31, Word: 94.91, Topo: 99.43, Assm: 95.35, U_kld_y: 0.33
+
+[187700] Beta: 0.147, Loss: 15.20, Prop_loss: 7.72, U_loss: 6.73, YMSE: 0.19, DTrue: 0.17, DFalse: 0.39, PNorm: 994.24, GNorm: 19.94
+[187700] Prop_KL: 35.87, 20.37, Word: 95.08, Topo: 99.44, Assm: 95.18, Log_prior_y: -3.98
+[187700] Unsup_KL: 36.30, 20.37, Word: 95.43, Topo: 99.45, Assm: 95.11, U_kld_y: 0.33
+
+[187750] Beta: 0.147, Loss: 15.97, Prop_loss: 7.64, U_loss: 6.85, YMSE: 0.21, DTrue: 0.12, DFalse: 1.15, PNorm: 994.35, GNorm: 17.79
+[187750] Prop_KL: 34.80, 20.44, Word: 94.81, Topo: 99.44, Assm: 94.78, Log_prior_y: -3.96
+[187750] Unsup_KL: 36.10, 20.55, Word: 94.86, Topo: 99.54, Assm: 95.38, U_kld_y: 0.33
+
+[187800] Beta: 0.147, Loss: 15.36, Prop_loss: 7.69, U_loss: 6.76, YMSE: 0.19, DTrue: 0.19, DFalse: 0.53, PNorm: 994.46, GNorm: 16.41
+[187800] Prop_KL: 35.64, 20.49, Word: 95.33, Topo: 99.49, Assm: 94.60, Log_prior_y: -3.94
+[187800] Unsup_KL: 35.81, 20.53, Word: 94.98, Topo: 99.49, Assm: 95.24, U_kld_y: 0.31
+
